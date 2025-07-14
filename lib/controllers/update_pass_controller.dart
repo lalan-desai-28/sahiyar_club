@@ -16,8 +16,8 @@ class UpdatePassController extends GetxController {
 
   Rx<File?> profileImage = Rx<File?>(null);
   final Rx<File?> idProofImage = Rx<File?>(null);
-  final TextEditingController fnameController = TextEditingController();
-  final TextEditingController lnameController = TextEditingController();
+  final TextEditingController fullNameController = TextEditingController();
+
   final TextEditingController mobileController = TextEditingController();
   final Rx<DateTime> selectedDate =
       DateTime.now().subtract(const Duration(days: 365 * 13)).obs;
@@ -53,8 +53,7 @@ class UpdatePassController extends GetxController {
   }
 
   void loadPassData(FullPass fullPass) {
-    fnameController.text = fullPass.firstName ?? '';
-    lnameController.text = fullPass.lastName ?? '';
+    fullNameController.text = fullPass.fullName ?? '';
     mobileController.text = fullPass.mobile ?? '';
     selectedDate.value = DateTime.parse(
       fullPass.dob ?? DateFormat('yyyy-MM-dd').format(DateTime.now()),
@@ -189,18 +188,18 @@ class UpdatePassController extends GetxController {
   }
 
   bool isFormValid() {
-    if (fnameController.text.isEmpty || lnameController.text.isEmpty) {
+    if (fullNameController.text.isEmpty) {
       SnackbarUtil.showErrorSnackbar(
         title: 'Invalid Name',
-        message: 'First name and last name cannot be empty!',
+        message: 'Full name cannot be empty!',
       );
       return false;
     }
 
-    if (fnameController.text.length < 3 || lnameController.text.length < 3) {
+    if (fullNameController.text.length < 3) {
       SnackbarUtil.showErrorSnackbar(
         title: 'Invalid Name',
-        message: 'First name and last name must be at least 3 characters long!',
+        message: 'Full name must be at least 3 characters long!',
       );
       return false;
     }
@@ -224,8 +223,7 @@ class UpdatePassController extends GetxController {
     // Update pass data
     final response = await passRepository.updatePass(
       passId: passId,
-      firstName: fnameController.text.trim(),
-      lastName: lnameController.text.trim(),
+      fullName: fullNameController.text.trim(),
       dob: DateFormat('yyyy-MM-dd').format(selectedDate.value),
       mobile: mobileController.text.trim(),
       gender: gender.value.toLowerCase(),

@@ -23,6 +23,7 @@ class CreatePassController extends GetxController {
   final RxString gender = 'Male'.obs;
 
   final Rx<File?> idProofImage = Rx<File?>(null);
+  final RxBool isPaymentDone = false.obs;
 
   final RxBool isLoading = false.obs;
   final RxBool isImageUploading = false.obs;
@@ -211,6 +212,7 @@ class CreatePassController extends GetxController {
       dob: DateFormat('yyyy-MM-dd').format(selectedDate.value),
       mobile: mobileController.text.trim(),
       gender: gender.value.toLowerCase(),
+      status: isPaymentDone.value ? 'InRequest' : 'Pending',
     );
     if (response.statusCode == 201) {
       isImageUploading.value = true;

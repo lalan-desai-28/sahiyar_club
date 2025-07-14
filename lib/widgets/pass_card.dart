@@ -329,14 +329,13 @@ class _PassCardState extends State<PassCard> {
   }
 
   String _getFullName() {
-    final firstName = _currentPass.firstName?.trim() ?? '';
-    final lastName = _currentPass.lastName?.trim() ?? '';
+    final fullName = _currentPass.fullName?.trim() ?? '';
 
-    if (firstName.isEmpty && lastName.isEmpty) {
+    if (fullName.isEmpty) {
       return 'Unknown User';
     }
 
-    return '$firstName $lastName'.trim();
+    return fullName;
   }
 
   String _getStatusText() {

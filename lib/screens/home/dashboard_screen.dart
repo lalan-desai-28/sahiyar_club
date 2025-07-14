@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:sahiyar_club/controllers/dashboard_controller.dart';
 import 'package:sahiyar_club/controllers/home_controller.dart';
 import 'package:sahiyar_club/app/routes/app_routes.dart';
+import 'package:sahiyar_club/models/stat.dart';
 import 'package:sahiyar_club/statics/app_statics.dart';
 import 'package:sahiyar_club/widgets/animated_counter.dart';
 
@@ -47,11 +49,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.8,
       child: Center(
-        child: CircularProgressIndicator(
-          color: Colors.amber,
-          strokeWidth: 2.5,
-          backgroundColor: Theme.of(context).colorScheme.surface,
-        ),
+        child: CircularProgressIndicator(color: Colors.amber, strokeWidth: 2),
       ),
     );
   }
@@ -82,10 +80,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           _buildStatCards(),
           const SizedBox(height: 32),
-          _buildGenderBreakdown(),
-          const SizedBox(height: 32),
           _buildQuickActions(),
           const SizedBox(height: 20),
+          _buildGenderBreakdown(),
+          const SizedBox(height: 32),
         ],
       ),
     );
@@ -97,16 +95,183 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        _buildCurrentFeesCard(stats?.currentFeeBatch),
+        const SizedBox(height: 20),
         _buildSectionHeader('Pass Statistics', Icons.analytics),
         const SizedBox(height: 16),
-
-        // Total Passes Card
         _buildTotalPassCard(stats?.totalPasses ?? 0),
         const SizedBox(height: 16),
-
-        // Status Cards Grid
         _buildStatusGrid(stats),
       ],
+    );
+  }
+
+  Widget _buildCurrentFeesCard(CurrentFeeBatch? feeBatch) {
+    if (feeBatch == null) return const SizedBox.shrink();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF1E3A8A), // Deep blue
+            const Color(0xFF3B82F6), // Blue
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1E3A8A).withOpacity(0.4),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.3),
+                    width: 1.5,
+                  ),
+                ),
+                child: const Icon(
+                  Icons.account_balance_wallet,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Current Pass Price',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    if (feeBatch.batchName != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          feeBatch.batchName!,
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodySmall?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: _buildFeeItem(
+                  'Male',
+                  feeBatch.maleFee ?? 0,
+                  Icons.male,
+                  const Color(0xFF60A5FA),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildFeeItem(
+                  'Female',
+                  feeBatch.femaleFee ?? 0,
+                  Icons.female,
+                  const Color(0xFFF472B6),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildFeeItem(
+                  'Kid',
+                  feeBatch.kidFee ?? 0,
+                  Icons.child_care,
+                  const Color(0xFFFBBF24),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeeItem(
+    String label,
+    int amount,
+    IconData icon,
+    Color iconColor,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: iconColor, size: 18),
+          ),
+          const SizedBox(height: 8),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              '₹${_formatAmount(amount)}',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Colors.white.withOpacity(0.9),
+              fontWeight: FontWeight.w500,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -121,6 +286,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           colors: [Colors.amber[600]!, Colors.orange[600]!],
         ),
         borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.amber.withOpacity(0.4),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: InkWell(
         onTap: () => Get.toNamed(AppRoutes.TOTAL_PASS_LIST),
@@ -519,6 +691,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void _navigateToGenderFilteredList(String gender) {
     Get.toNamed(AppRoutes.TOTAL_PASS_LIST, arguments: {'gender': gender});
+  }
+
+  // Helper method to format amount in INR format
+  String _formatAmount(int amount) {
+    if (amount == 0) return '0';
+    return NumberFormat('#,##,###').format(amount);
   }
 }
 

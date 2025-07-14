@@ -10,6 +10,7 @@ class Stat {
   int? totalMalePasses;
   int? totalFemalePasses;
   int? totalKidPasses;
+  CurrentFeeBatch? currentFeeBatch;
 
   Stat({
     this.totalPasses,
@@ -23,6 +24,7 @@ class Stat {
     this.totalMalePasses,
     this.totalFemalePasses,
     this.totalKidPasses,
+    this.currentFeeBatch,
   });
 
   Stat.fromJson(Map<String, dynamic> json) {
@@ -37,6 +39,10 @@ class Stat {
     totalMalePasses = json['totalMalePasses'];
     totalFemalePasses = json['totalFemalePasses'];
     totalKidPasses = json['totalKidPasses'];
+    currentFeeBatch =
+        json['currentFeeBatch'] != null
+            ? CurrentFeeBatch.fromJson(json['currentFeeBatch'])
+            : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -52,6 +58,43 @@ class Stat {
     data['totalMalePasses'] = totalMalePasses;
     data['totalFemalePasses'] = totalFemalePasses;
     data['totalKidPasses'] = totalKidPasses;
+    if (currentFeeBatch != null) {
+      data['currentFeeBatch'] = currentFeeBatch!.toJson();
+    }
+    return data;
+  }
+}
+
+class CurrentFeeBatch {
+  String? batchType;
+  String? batchName;
+  int? maleFee;
+  int? femaleFee;
+  int? kidFee;
+
+  CurrentFeeBatch({
+    this.batchType,
+    this.batchName,
+    this.maleFee,
+    this.femaleFee,
+    this.kidFee,
+  });
+
+  CurrentFeeBatch.fromJson(Map<String, dynamic> json) {
+    batchType = json['batchType'];
+    batchName = json['batchName'];
+    maleFee = json['maleFee'];
+    femaleFee = json['femaleFee'];
+    kidFee = json['kidFee'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['batchType'] = batchType;
+    data['batchName'] = batchName;
+    data['maleFee'] = maleFee;
+    data['femaleFee'] = femaleFee;
+    data['kidFee'] = kidFee;
     return data;
   }
 }

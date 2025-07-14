@@ -6,8 +6,7 @@ class FullPass {
   String? agentCode;
   String? passType;
   String? passCode;
-  String? firstName;
-  String? lastName;
+  String? fullName;
   String? gender;
   String? dob;
   String? mobile;
@@ -29,8 +28,7 @@ class FullPass {
     this.agentCode,
     this.passType,
     this.passCode,
-    this.firstName,
-    this.lastName,
+    this.fullName,
     this.gender,
     this.dob,
     this.mobile,
@@ -53,8 +51,7 @@ class FullPass {
     agentCode = json['agentCode'];
     passType = json['passType'];
     passCode = json['passCode'];
-    firstName = json['firstName'];
-    lastName = json['lastName'];
+    fullName = json['fullName'];
     gender = json['gender'];
     dob = json['dob'];
     mobile = json['mobile'];
@@ -69,31 +66,5 @@ class FullPass {
     rejectionReason = json['rejectionReason'].cast<String>();
     createdAt = json['createdAt'];
     updatedAt = json['updatedAt'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['_id'] = sId;
-    data['requestedBy'] = requestedBy;
-    data['agentCode'] = agentCode;
-    data['passType'] = passType;
-    data['passCode'] = passCode;
-    data['firstName'] = firstName;
-    data['lastName'] = lastName;
-    data['gender'] = gender;
-    data['dob'] = dob;
-    data['mobile'] = mobile;
-    data['idProofUrl'] = idProofUrl;
-    data['profilePhotoUrl'] = profilePhotoUrl;
-    data['amount'] = amount;
-    data['isAmountPaid'] = isAmountPaid;
-    data['paymentRefId'] = paymentRefId;
-    data['fromDate'] = fromDate;
-    data['toDate'] = toDate;
-    data['status'] = status;
-    data['rejectionReason'] = rejectionReason;
-    data['createdAt'] = createdAt;
-    data['updatedAt'] = updatedAt;
-    return data;
   }
 }

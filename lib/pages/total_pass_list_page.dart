@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sahiyar_club/controllers/total_pass_list_controller.dart';
 import 'package:sahiyar_club/widgets/pass_card.dart';
-import 'package:sahiyar_club/widgets/custom_dropdown.dart';
 
 class TotalPassListPage extends StatefulWidget {
   const TotalPassListPage({super.key});

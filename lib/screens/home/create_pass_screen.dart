@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sahiyar_club/controllers/create_pass_controller.dart';
 import 'package:sahiyar_club/widgets/custom_button.dart';
-import 'package:sahiyar_club/widgets/custom_dropdown.dart';
 import 'package:sahiyar_club/widgets/custom_form_field.dart';
 import 'package:sahiyar_club/widgets/profile_avatar_widget.dart';
 import 'package:intl/intl.dart';
@@ -32,6 +31,7 @@ class _CreatePassScreenState extends State<CreatePassScreen> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(height: 15),
+
           Obx(
             () => ProfileAvatarWidget(
               isUploading: _controller.isImageUploading.value,
@@ -57,16 +57,16 @@ class _CreatePassScreenState extends State<CreatePassScreen> {
               icon: Icons.badge,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
 
           // Full Name Field
           CustomFormField(
             controller: _controller.fullNameController,
             label: 'Full Name',
             keyboardType: TextInputType.name,
-            placeholder: "Name Surname",
+            placeholder: "Name + Surname",
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
 
           // Mobile Number Field
           CustomFormField(
@@ -76,7 +76,7 @@ class _CreatePassScreenState extends State<CreatePassScreen> {
             maxLength: 10,
             placeholder: "10 digit mobile number",
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
 
           // Gender Field
           Obx(
@@ -185,7 +185,7 @@ class _CreatePassScreenState extends State<CreatePassScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
 
           // Date of Birth (Only for Kids)
           Obx(() {
@@ -202,7 +202,10 @@ class _CreatePassScreenState extends State<CreatePassScreen> {
               lastDate: DateTime.now(),
             );
           }),
-          const SizedBox(height: 24),
+
+          // Payment Switch at the top
+          _buildPaymentSwitch(),
+          const SizedBox(height: 20),
 
           // Submit Button
           SizedBox(
@@ -213,6 +216,85 @@ class _CreatePassScreenState extends State<CreatePassScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentSwitch() {
+    return Obx(
+      () => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).colorScheme.shadow.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color:
+                    _controller.isPaymentDone.value
+                        ? Colors.green.withOpacity(0.1)
+                        : Colors.orange.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                _controller.isPaymentDone.value
+                    ? Icons.payment
+                    : Icons.payment_outlined,
+                color:
+                    _controller.isPaymentDone.value
+                        ? Colors.green[600]
+                        : Colors.orange[600],
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Payment Status',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  Text(
+                    _controller.isPaymentDone.value ? 'Paid' : 'In Request',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color:
+                          _controller.isPaymentDone.value
+                              ? Colors.green[600]
+                              : Colors.orange[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Switch.adaptive(
+              value: _controller.isPaymentDone.value,
+              onChanged: (value) => _controller.isPaymentDone.value = value,
+              activeColor: Colors.green[600],
+              activeTrackColor: Colors.green.withOpacity(0.3),
+              inactiveThumbColor: Colors.grey[400],
+              inactiveTrackColor: Colors.grey.withOpacity(0.3),
+            ),
+          ],
+        ),
       ),
     );
   }

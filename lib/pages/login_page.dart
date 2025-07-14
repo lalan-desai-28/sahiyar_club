@@ -26,7 +26,7 @@ class _LoginPageState extends State<LoginPage> {
       controller: loginController.mobileController,
       label: 'Mobile',
       keyboardType: TextInputType.phone,
-      placeholder: "98XXXXXXXX",
+      placeholder: "10-digit mobile number",
       maxLength: 10,
     );
   }

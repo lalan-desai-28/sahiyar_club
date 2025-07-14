@@ -4,7 +4,6 @@ import 'package:get/state_manager.dart';
 import 'package:sahiyar_club/controllers/update_pass_controller.dart';
 import 'package:sahiyar_club/models/pass_full.dart';
 import 'package:sahiyar_club/widgets/custom_button.dart';
-import 'package:sahiyar_club/widgets/custom_dropdown.dart';
 import 'package:sahiyar_club/widgets/custom_form_field.dart';
 import 'package:sahiyar_club/widgets/profile_avatar_widget.dart';
 import 'package:intl/intl.dart';
@@ -104,27 +103,11 @@ class _UpdatePassPageState extends State<UpdatePassPage> {
   }
 
   Widget _buildFullNameField() {
-    // Combine first and last name into a single field
-    final fullNameController = TextEditingController();
-
-    // Set initial value from first and last name
-    final firstName = controller.fnameController.text;
-    final lastName = controller.lnameController.text;
-    fullNameController.text = '$firstName $lastName'.trim();
-
-    // Update both controllers when full name changes
-    fullNameController.addListener(() {
-      final parts = fullNameController.text.split(' ');
-      controller.fnameController.text = parts.isNotEmpty ? parts.first : '';
-      controller.lnameController.text =
-          parts.length > 1 ? parts.sublist(1).join(' ') : '';
-    });
-
     return CustomFormField(
-      controller: fullNameController,
+      controller: controller.fullNameController,
       label: 'Full Name',
       keyboardType: TextInputType.name,
-      placeholder: "Name Surname",
+      placeholder: "Name + Surname",
     );
   }
 

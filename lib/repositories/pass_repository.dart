@@ -14,6 +14,7 @@ class PassRepository {
     required String mobile,
     required String dob,
     required String gender,
+    required String status,
   }) async {
     final response = await dioClient.post(
       '/passes/request',
@@ -25,6 +26,7 @@ class PassRepository {
             "dob": dob,
             "mobile": mobile,
             "passType": "season",
+            "status": status,
           },
         ],
       },
@@ -46,8 +48,7 @@ class PassRepository {
 
   Future<Response<Pass>> updatePass({
     required String passId,
-    required String firstName,
-    required String lastName,
+    required String fullName,
     required String mobile,
     required String dob,
     required String gender,
@@ -55,8 +56,7 @@ class PassRepository {
     final response = await dioClient.put(
       '/passes/$passId',
       data: {
-        "firstName": firstName,
-        "lastName": lastName,
+        "fullName": fullName,
         "gender": gender,
         "dob": dob,
         "mobile": mobile,
