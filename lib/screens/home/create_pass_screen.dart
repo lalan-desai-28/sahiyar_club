@@ -1,0 +1,446 @@
+// create_pass_screen.dart
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:sahiyar_club/controllers/create_pass_controller.dart';
+import 'package:sahiyar_club/widgets/custom_button.dart';
+import 'package:sahiyar_club/widgets/custom_dropdown.dart';
+import 'package:sahiyar_club/widgets/custom_form_field.dart';
+import 'package:sahiyar_club/widgets/profile_avatar_widget.dart';
+import 'package:intl/intl.dart';
+
+class CreatePassScreen extends StatefulWidget {
+  const CreatePassScreen({super.key});
+
+  @override
+  State<CreatePassScreen> createState() => _CreatePassScreenState();
+}
+
+class _CreatePassScreenState extends State<CreatePassScreen> {
+  final CreatePassController _controller = CreatePassController();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.init();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(height: 15),
+          Obx(
+            () => ProfileAvatarWidget(
+              isUploading: _controller.isImageUploading.value,
+              image:
+                  _controller.profileImage.value != null
+                      ? Image.file(_controller.profileImage.value!)
+                      : null,
+              onImageSelected: (file) => _controller.profileImage.value = file,
+              placeholderImage: Image.asset(
+                'assets/images/user.png',
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+
+          // ID Proof Field
+          Obx(
+            () => FileUploadField(
+              label: 'ID Proof',
+              placeholder: 'Aadhar Card or Driving License',
+              selectedFile: _controller.idProofImage.value,
+              onFileSelected: _controller.selectIdProofImage,
+              icon: Icons.badge,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Full Name Field
+          CustomFormField(
+            controller: _controller.fullNameController,
+            label: 'Full Name',
+            keyboardType: TextInputType.name,
+            placeholder: "Name Surname",
+          ),
+          const SizedBox(height: 16),
+
+          // Mobile Number Field
+          CustomFormField(
+            controller: _controller.mobileController,
+            label: 'Mobile Number',
+            keyboardType: TextInputType.number,
+            maxLength: 10,
+            placeholder: "10 digit mobile number",
+          ),
+          const SizedBox(height: 16),
+
+          // Gender Field
+          Obx(
+            () => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Gender',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.outline.withOpacity(0.5),
+                    ),
+                  ),
+                  child: DropdownButton<String>(
+                    value:
+                        _controller.gender.value.isEmpty
+                            ? null
+                            : _controller.gender.value,
+                    hint: Text(
+                      'Select Gender',
+                      style: TextStyle(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                    ),
+                    isExpanded: true,
+                    underline: const SizedBox(),
+                    icon: Icon(
+                      Icons.arrow_drop_down,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    dropdownColor: Theme.of(context).colorScheme.surface,
+                    items: [
+                      DropdownMenuItem(
+                        value: 'Male',
+                        child: Row(
+                          children: [
+                            Icon(Icons.male, color: Colors.blue[600], size: 20),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Male',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      DropdownMenuItem(
+                        value: 'Female',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.female,
+                              color: Colors.pink[600],
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Female',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      DropdownMenuItem(
+                        value: 'Kid',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.child_care,
+                              color: Colors.orange[600],
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Kid',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    onChanged:
+                        (value) => _controller.gender.value = value ?? '',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Date of Birth (Only for Kids)
+          Obx(() {
+            if (_controller.gender.value != 'Kid') {
+              return const SizedBox.shrink();
+            }
+            return DatePickerField(
+              label: 'Date of Birth',
+              selectedDate: _controller.selectedDate.value,
+              onDateSelected: (date) => _controller.selectedDate.value = date,
+              firstDate: DateTime.now().subtract(
+                const Duration(days: 365 * 13),
+              ),
+              lastDate: DateTime.now(),
+            );
+          }),
+          const SizedBox(height: 24),
+
+          // Submit Button
+          SizedBox(
+            width: double.infinity,
+            child: CustomButton(
+              label: 'Submit',
+              onPressed: _controller.submitForm,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// File Upload Field Widget with Theme Support
+class FileUploadField extends StatelessWidget {
+  final String label;
+  final String placeholder;
+  final dynamic selectedFile;
+  final VoidCallback onFileSelected;
+  final IconData icon;
+  final bool isLoading;
+
+  const FileUploadField({
+    super.key,
+    required this.label,
+    required this.placeholder,
+    this.selectedFile,
+    required this.onFileSelected,
+    this.icon = Icons.upload_file,
+    this.isLoading = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 8),
+        InkWell(
+          onTap: isLoading ? null : onFileSelected,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            height: 60,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              border: Border.all(
+                color:
+                    selectedFile != null
+                        ? Colors.green
+                        : Theme.of(
+                          context,
+                        ).colorScheme.outline.withOpacity(0.5),
+                width: selectedFile != null ? 2 : 1,
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  _buildFilePreview(context),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      selectedFile != null ? 'File selected' : placeholder,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color:
+                            selectedFile != null
+                                ? Colors.green[700]
+                                : Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withOpacity(0.6),
+                        fontWeight:
+                            selectedFile != null
+                                ? FontWeight.w500
+                                : FontWeight.normal,
+                      ),
+                    ),
+                  ),
+                  if (isLoading)
+                    SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    )
+                  else
+                    Icon(
+                      selectedFile != null ? Icons.check_circle : icon,
+                      color:
+                          selectedFile != null
+                              ? Colors.green
+                              : Theme.of(context).colorScheme.primary,
+                      size: 24,
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilePreview(BuildContext context) {
+    if (selectedFile == null) {
+      return Icon(
+        icon,
+        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+        size: 24,
+      );
+    }
+
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: Image.file(
+          selectedFile,
+          fit: BoxFit.cover,
+          errorBuilder:
+              (context, error, stackTrace) => Icon(
+                Icons.image,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                size: 16,
+              ),
+        ),
+      ),
+    );
+  }
+}
+
+// Date Picker Field Widget with Theme Support
+class DatePickerField extends StatelessWidget {
+  final String label;
+  final DateTime selectedDate;
+  final Function(DateTime) onDateSelected;
+  final DateTime? firstDate;
+  final DateTime? lastDate;
+
+  const DatePickerField({
+    super.key,
+    required this.label,
+    required this.selectedDate,
+    required this.onDateSelected,
+    this.firstDate,
+    this.lastDate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 8),
+        InkWell(
+          onTap: () => _showDatePicker(context),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  DateFormat('dd/MM/yyyy').format(selectedDate),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                Icon(
+                  Icons.calendar_today,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _showDatePicker(BuildContext context) async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: firstDate ?? DateTime(1900),
+      lastDate: lastDate ?? DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+              primary: Colors.amber[600]!,
+              onPrimary: Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (date != null) {
+      onDateSelected(date);
+    }
+  }
+}
