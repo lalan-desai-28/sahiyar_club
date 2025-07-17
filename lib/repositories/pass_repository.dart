@@ -143,8 +143,28 @@ class PassRepository {
 
   /// Marks payment as done for a pending pass
   /// Endpoint: POST /api/admin/{id}/pending
-  Future<Response<dynamic>> isPaymentDone(String passId) async {
+  Future<Response<dynamic>> changeToPending(String passId) async {
     final response = await dioClient.post('/admin/$passId/pending', data: {});
+
+    return Response<dynamic>(
+      data: response.data,
+      statusCode: response.statusCode,
+      statusMessage: response.statusMessage,
+      requestOptions: RequestOptions(
+        data: response.data,
+        method: response.requestOptions.method,
+        headers: response.requestOptions.headers,
+        queryParameters: response.requestOptions.queryParameters,
+        path: response.requestOptions.path,
+      ),
+    );
+  }
+
+  Future<Response<dynamic>> changeToInRequest(String passId) async {
+    final response = await dioClient.post(
+      '/admin/$passId/in-request',
+      data: {},
+    );
 
     return Response<dynamic>(
       data: response.data,

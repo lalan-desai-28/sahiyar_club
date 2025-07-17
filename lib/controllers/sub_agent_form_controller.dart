@@ -40,7 +40,7 @@ class SubAgentFormController extends GetxController {
           title: 'Success',
           message: 'Sub Agent created successfully',
         );
-        Get.toNamed(AppRoutes.SUB_AGENTS_LIST);
+        Get.toNamed(AppRoutes.HOME);
       } else {
         Get.snackbar('Error', 'Failed to create Sub Agent');
       }

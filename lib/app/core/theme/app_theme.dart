@@ -9,6 +9,7 @@ class AppTheme {
   // Light Theme
   static ThemeData get lightTheme {
     return ThemeData(
+      
       useMaterial3: true,
       brightness: Brightness.light,
 
@@ -20,7 +21,9 @@ class AppTheme {
 
       // Typography
       textTheme: GoogleFonts.montserratTextTheme(
+
         _baseTextTheme.apply(
+          
           bodyColor: AppColors.textPrimary,
           displayColor: AppColors.textPrimary,
         ),

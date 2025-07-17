@@ -63,14 +63,16 @@ class _UpdatePassPageState extends State<UpdatePassPage> {
             const SizedBox(height: 16),
 
             // Gender Field
-            _buildGenderField(),
-            const SizedBox(height: 16),
+            if (widget.fullPass.gender != "kid") ...[
+              _buildGenderField(),
+              const SizedBox(height: 16),
+            ] else ...[
+              // Date of Birth (Only for Kids)
+              _buildDatePicker(),
+              const SizedBox(height: 24),
 
-            // Date of Birth (Only for Kids)
-            _buildDatePicker(),
-            const SizedBox(height: 24),
-
-            // Submit Button
+              // Submit Button
+            ],
             SizedBox(width: double.infinity, child: _buildSubmitButton()),
           ],
         ),
@@ -195,25 +197,25 @@ class _UpdatePassPageState extends State<UpdatePassPage> {
                     ],
                   ),
                 ),
-                DropdownMenuItem(
-                  value: 'Kid',
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.child_care,
-                        color: Colors.orange[600],
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Kid',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                // DropdownMenuItem(
+                //   value: 'Kid',
+                //   child: Row(
+                //     children: [
+                //       Icon(
+                //         Icons.child_care,
+                //         color: Colors.orange[600],
+                //         size: 20,
+                //       ),
+                //       const SizedBox(width: 8),
+                //       Text(
+                //         'Kid',
+                //         style: TextStyle(
+                //           color: Theme.of(context).colorScheme.onSurface,
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+                // ),
               ],
               onChanged: (value) {
                 if (value != null) {
@@ -460,11 +462,15 @@ class _UpdatePassPageState extends State<UpdatePassPage> {
   }
 
   Widget _buildSubmitButton() {
-    return CustomButton(
-      label: 'Update Pass',
-      onPressed: () {
-        controller.submitForm(widget.fullPass.sId ?? '');
-      },
+    return Obx(
+      () => CustomButton(
+        label: 'Update Pass',
+        isLoading: controller.isLoading.value,
+        onPressed: () {
+          if (controller.isLoading.value) return;
+          controller.submitForm(widget.fullPass.sId ?? '');
+        },
+      ),
     );
   }
 }

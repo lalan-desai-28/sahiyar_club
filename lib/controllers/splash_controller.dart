@@ -17,10 +17,10 @@ class SplashController extends GetxController {
 
   Future<User?> getUserFromToken(String token) async {
     // make me request to get user data from token
+    print("Token: $token");
     if (token.isEmpty) {
       return null;
     }
-    print("Token: $token");
     final response = await usersRepository.me(token: token);
     if (response.statusCode == 200) {
       return response.data;

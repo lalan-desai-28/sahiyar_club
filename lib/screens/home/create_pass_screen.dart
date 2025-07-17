@@ -192,14 +192,20 @@ class _CreatePassScreenState extends State<CreatePassScreen> {
             if (_controller.gender.value != 'Kid') {
               return const SizedBox.shrink();
             }
-            return DatePickerField(
-              label: 'Date of Birth',
-              selectedDate: _controller.selectedDate.value,
-              onDateSelected: (date) => _controller.selectedDate.value = date,
-              firstDate: DateTime.now().subtract(
-                const Duration(days: 365 * 13),
-              ),
-              lastDate: DateTime.now(),
+            return Column(
+              children: [
+                DatePickerField(
+                  label: 'Date of Birth',
+                  selectedDate: _controller.selectedDate.value,
+                  onDateSelected:
+                      (date) => _controller.selectedDate.value = date,
+                  firstDate: DateTime.now().subtract(
+                    const Duration(days: 365 * 13),
+                  ),
+                  lastDate: DateTime.now(),
+                ),
+                const SizedBox(height: 14),
+              ],
             );
           }),
 
@@ -210,9 +216,12 @@ class _CreatePassScreenState extends State<CreatePassScreen> {
           // Submit Button
           SizedBox(
             width: double.infinity,
-            child: CustomButton(
-              label: 'Submit',
-              onPressed: _controller.submitForm,
+            child: Obx(
+              () => CustomButton(
+                isLoading: _controller.isLoading.value,
+                label: 'Submit',
+                onPressed: _controller.submitForm,
+              ),
             ),
           ),
         ],

@@ -193,29 +193,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Row(
             children: [
               Expanded(
-                child: _buildFeeItem(
+                child: _buildFeeItemWithMRP(
                   'Male',
                   feeBatch.maleFee ?? 0,
+                  2500, // MRP
                   Icons.male,
                   const Color(0xFF60A5FA),
+                  feeBatch.shouldShowMRP ?? false,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildFeeItem(
+                child: _buildFeeItemWithMRP(
                   'Female',
                   feeBatch.femaleFee ?? 0,
+                  2500, // MRP
                   Icons.female,
                   const Color(0xFFF472B6),
+                  feeBatch.shouldShowMRP ?? false,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildFeeItem(
+                child: _buildFeeItemWithMRP(
                   'Kid',
                   feeBatch.kidFee ?? 0,
+                  1700, // MRP
                   Icons.child_care,
                   const Color(0xFFFBBF24),
+                  feeBatch.shouldShowMRP ?? false,
                 ),
               ),
             ],
@@ -225,11 +231,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildFeeItem(
+  Widget _buildFeeItemWithMRP(
     String label,
-    int amount,
+    int currentPrice,
+    int mrpPrice,
     IconData icon,
-    Color iconColor,
+    Color color,
+    bool shouldShowMRP,
   ) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -247,13 +255,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
               color: Colors.white,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: iconColor, size: 18),
+            child: Icon(icon, color: color, size: 18),
           ),
           const SizedBox(height: 8),
+          // MRP with strike-through
+          shouldShowMRP
+              ? FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  '₹${_formatAmount(mrpPrice)}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.white.withOpacity(0.6),
+                    decoration: TextDecoration.lineThrough,
+                    decorationColor: Colors.white.withOpacity(0.6),
+                    decorationThickness: 1.5,
+                    fontSize: 12,
+                  ),
+                ),
+              )
+              : const SizedBox.shrink(),
+          const SizedBox(height: 2),
+          // Current price
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              '₹${_formatAmount(amount)}',
+              '₹${_formatAmount(currentPrice)}',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -472,7 +498,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 title: 'Male',
                 count: stats?.totalMalePasses ?? 0,
                 color: Colors.blue[600]!,
-                gender: 'Male',
+                gender: 'male',
               ),
             ),
             const SizedBox(width: 12),
@@ -482,7 +508,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 title: 'Female',
                 count: stats?.totalFemalePasses ?? 0,
                 color: Colors.pink[600]!,
-                gender: 'Female',
+                gender: 'female',
               ),
             ),
             const SizedBox(width: 12),
@@ -492,7 +518,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 title: 'Kids',
                 count: stats?.totalKidPasses ?? 0,
                 color: Colors.orange[600]!,
-                gender: 'Kid',
+                gender: 'kid',
               ),
             ),
           ],

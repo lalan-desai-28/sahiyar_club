@@ -34,10 +34,8 @@ class UpdatePassController extends GetxController {
 
   void init() {
     mobileController.addListener(() {
-      print('Mobile number changed: ${mobileController.text}');
       if (mobileController.text.length == 10) {
         if (_validateMobileNumber(mobileController.text)) {
-          print('Mobile number is valid');
           isMobileVerified.value = true;
         } else {
           isMobileVerified.value = false;

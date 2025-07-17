@@ -23,7 +23,7 @@ class CreatePassController extends GetxController {
   final RxString gender = 'Male'.obs;
 
   final Rx<File?> idProofImage = Rx<File?>(null);
-  final RxBool isPaymentDone = false.obs;
+  final RxBool isPaymentDone = true.obs;
 
   final RxBool isLoading = false.obs;
   final RxBool isImageUploading = false.obs;
@@ -167,6 +167,18 @@ class CreatePassController extends GetxController {
       return false;
     }
 
+    // check if first name and last name are not the same and are proper like
+    // firstname{space}lastname
+    final names = fullNameController.text.trim().split(' ');
+    if (names.length < 2 || names[0].toLowerCase() == names[1].toLowerCase()) {
+      SnackbarUtil.showErrorSnackbar(
+        title: 'Invalid Name',
+        message:
+            'Please enter a valid full name! It should contain both first and last names.',
+      );
+      return false;
+    }
+
     if (mobileController.text.isEmpty || mobileController.text.length != 10) {
       SnackbarUtil.showErrorSnackbar(
         title: 'Invalid Mobile Number',
@@ -203,6 +215,7 @@ class CreatePassController extends GetxController {
   }
 
   void submitForm() async {
+    if (isLoading.value || isImageUploading.value) return;
     bool isValid = isFormValid();
     if (!isValid) return;
     isLoading.value = true;
@@ -212,7 +225,7 @@ class CreatePassController extends GetxController {
       dob: DateFormat('yyyy-MM-dd').format(selectedDate.value),
       mobile: mobileController.text.trim(),
       gender: gender.value.toLowerCase(),
-      status: isPaymentDone.value ? 'InRequest' : 'Pending',
+      status: isPaymentDone.value ? 'Pending' : 'InRequest',
     );
     if (response.statusCode == 201) {
       isImageUploading.value = true;

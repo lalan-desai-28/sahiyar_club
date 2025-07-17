@@ -71,6 +71,7 @@ class CurrentFeeBatch {
   int? maleFee;
   int? femaleFee;
   int? kidFee;
+  bool? shouldShowMRP;
 
   CurrentFeeBatch({
     this.batchType,
@@ -78,6 +79,7 @@ class CurrentFeeBatch {
     this.maleFee,
     this.femaleFee,
     this.kidFee,
+    this.shouldShowMRP = false,
   });
 
   CurrentFeeBatch.fromJson(Map<String, dynamic> json) {
@@ -86,6 +88,7 @@ class CurrentFeeBatch {
     maleFee = json['maleFee'];
     femaleFee = json['femaleFee'];
     kidFee = json['kidFee'];
+    shouldShowMRP = json['showDiscountedPrice'] ?? false;
   }
 
   Map<String, dynamic> toJson() {

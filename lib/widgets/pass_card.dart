@@ -201,13 +201,14 @@ class _PassCardState extends State<PassCard> {
       return _buildLoadingIndicator();
     }
 
-    // Only show switch when status is "inrequest"
-    if (_isStatusInRequest()) {
+    // Only show switch when status is "inrequest" or "pending"
+    final status = _currentPass.status?.toLowerCase().trim();
+    if (status == 'inrequest' || status == 'pending') {
       return _buildStatusToggle();
     }
 
-    // Show status badge for other statuses
-    return _buildStatusBadge();
+    // Hide toggle for other statuses
+    return const SizedBox.shrink();
   }
 
   Widget _buildLoadingIndicator() {
@@ -235,22 +236,28 @@ class _PassCardState extends State<PassCard> {
     );
   }
 
-  Future<void> _updatePaymentStatus() async {
-    if (_paymentStatusUpdating || _currentPass.sId == null) return;
-
+  Future<void> _updatePaymentStatus(bool isPaid) async {
     setState(() {
       _paymentStatusUpdating = true;
     });
 
     try {
-      final response = await _passRepository.isPaymentDone(_currentPass.sId!);
+      final response =
+          isPaid
+              ? await _passRepository.changeToPending(_currentPass.sId!)
+              : await _passRepository.changeToInRequest(_currentPass.sId!);
 
       if (response.statusCode == 200) {
-        // Update local pass state
+        // Update local pass state based on the action
         setState(() {
-          _currentPass.isAmountPaid = !(_currentPass.isAmountPaid ?? false);
-          if (_currentPass.isAmountPaid == true) {
+          if (isPaid) {
+            // Payment done: change to pending
             _currentPass.status = 'pending';
+            _currentPass.isAmountPaid = true;
+          } else {
+            // Payment not done: change to inrequest
+            _currentPass.status = 'inrequest';
+            _currentPass.isAmountPaid = false;
           }
         });
       } else {
@@ -274,41 +281,23 @@ class _PassCardState extends State<PassCard> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Switch(
-          value: _isActive(),
-          onChanged:
-              widget.isEnabled ? (value) => _updatePaymentStatus() : null,
+          value: _isPaymentDone(),
+          onChanged: (value) {
+            _updatePaymentStatus(value);
+          },
           activeColor: Colors.green,
           inactiveThumbColor: Colors.grey,
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
         Text(
-          _isActive() ? 'Paid' : 'Pending',
+          _isPaymentDone() ? 'Paid' : 'Pending',
           style: TextStyle(
             fontSize: 11,
-            color: _isActive() ? Colors.green : Colors.grey,
+            color: _isPaymentDone() ? Colors.green : Colors.grey,
             fontWeight: FontWeight.w500,
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildStatusBadge() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: _getStatusColor().withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _getStatusColor().withOpacity(0.3), width: 1),
-      ),
-      child: Text(
-        _getStatusText(),
-        style: TextStyle(
-          fontSize: 12,
-          color: _getStatusColor(),
-          fontWeight: FontWeight.w600,
-        ),
-      ),
     );
   }
 
@@ -376,12 +365,10 @@ class _PassCardState extends State<PassCard> {
     }
   }
 
-  bool _isActive() {
-    return _currentPass.isAmountPaid ?? false;
-  }
-
-  bool _isStatusInRequest() {
-    return _currentPass.status?.toLowerCase().trim() == 'inrequest';
+  bool _isPaymentDone() {
+    // Payment is done when status is "pending"
+    // Payment is not done when status is "inrequest"
+    return _currentPass.status?.toLowerCase().trim() == 'pending';
   }
 
   void _navigateToUpdatePass() {
