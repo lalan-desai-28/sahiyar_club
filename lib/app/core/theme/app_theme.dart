@@ -191,7 +191,7 @@ class AppTheme {
       ),
 
       // Dialog Theme for Dark
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: const Color(0xFF1E1E1E),
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
