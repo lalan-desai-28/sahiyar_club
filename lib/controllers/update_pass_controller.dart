@@ -218,67 +218,73 @@ class UpdatePassController extends GetxController {
 
     isLoading.value = true;
 
-    // Update pass data
-    final response = await passRepository.updatePass(
-      passId: passId,
-      fullName: fullNameController.text.trim(),
-      dob: DateFormat('yyyy-MM-dd').format(selectedDate.value),
-      mobile: mobileController.text.trim(),
-      gender: gender.value.toLowerCase(),
-    );
-
-    if (response.statusCode == 200) {
-      final updatedPassId = response.data?.sId ?? '';
-      bool imageUploadSuccess = true;
-
-      // If images exist, upload them
-      if (profileImage.value != null || idProofImage.value != null) {
-        isImageUploading.value = true;
-
-        final uploadImageResponse = await passRepository
-            .uploadProfileAndIdProofImage(
-              passId: updatedPassId,
-              profileImage:
-                  profileImage.value != null
-                      ? File(profileImage.value!.path)
-                      : null,
-              idProofImage:
-                  idProofImage.value != null
-                      ? File(idProofImage.value!.path)
-                      : null,
-              onSendProgress: (int sent, int total) {
-                uploadProgress.value = ((sent / total) * 100).toInt();
-              },
-            );
-
-        isImageUploading.value = false;
-
-        if (uploadImageResponse.statusCode != 200) {
-          imageUploadSuccess = false;
-          SnackbarUtil.showErrorSnackbar(
-            title: 'Image Upload Failed',
-            message:
-                'Failed to upload images: ${uploadImageResponse.statusMessage}',
-          );
-        }
-      }
-
-      if (imageUploadSuccess) {
-        SnackbarUtil.showSuccessSnackbar(
-          title: 'Update Successful',
-          message: 'Pass updated successfully!',
-        );
-        Get.find<HomeController>().changeTab(2); // Change page if needed
-      }
-    } else {
-      SnackbarUtil.showErrorSnackbar(
-        title: 'Update Failed',
-        message: 'Failed to update pass: ${response.statusMessage}',
+    try {
+      // Update pass data
+      final response = await passRepository.updatePass(
+        passId: passId,
+        fullName: fullNameController.text.trim(),
+        dob: DateFormat('yyyy-MM-dd').format(selectedDate.value),
+        mobile: mobileController.text.trim(),
+        gender: gender.value.toLowerCase(),
       );
-    }
 
-    isLoading.value = false;
-    Get.offNamed(AppRoutes.HOME);
+      if (response.statusCode == 200) {
+        final updatedPassId = response.data?.sId ?? '';
+        bool imageUploadSuccess = true;
+
+        // If images exist, upload them
+        if (profileImage.value != null || idProofImage.value != null) {
+          isImageUploading.value = true;
+
+          final uploadImageResponse = await passRepository
+              .uploadProfileAndIdProofImage(
+                passId: updatedPassId,
+                profileImage:
+                    profileImage.value != null
+                        ? File(profileImage.value!.path)
+                        : null,
+                idProofImage:
+                    idProofImage.value != null
+                        ? File(idProofImage.value!.path)
+                        : null,
+                onSendProgress: (int sent, int total) {
+                  uploadProgress.value = ((sent / total) * 100).toInt();
+                },
+              );
+
+          if (uploadImageResponse.statusCode != 200) {
+            imageUploadSuccess = false;
+            SnackbarUtil.showErrorSnackbar(
+              title: 'Image Upload Failed',
+              message:
+                  'Failed to upload images: ${uploadImageResponse.statusMessage}',
+            );
+          }
+        }
+
+        if (imageUploadSuccess) {
+          SnackbarUtil.showSuccessSnackbar(
+            title: 'Update Successful',
+            message: 'Pass updated successfully!',
+          );
+          Get.find<HomeController>().changeTab(2); // Change page if needed
+        }
+      } else {
+        SnackbarUtil.showErrorSnackbar(
+          title: 'Update Failed',
+          message: 'Failed to update pass: ${response.statusMessage}',
+        );
+      }
+    } catch (e) {
+      SnackbarUtil.showErrorSnackbar(
+        title: 'Error',
+        message: 'An error occurred while updating the pass: $e',
+      );
+    } finally {
+      isLoading.value = false;
+      isImageUploading.value = false;
+      Get.offNamed(AppRoutes.HOME);
+    }
   }
 
   void selectIdProofImage() async {

@@ -220,47 +220,55 @@ class CreatePassController extends GetxController {
     if (!isValid) return;
     isLoading.value = true;
 
-    final response = await passRepository.createPass(
-      fullname: fullNameController.text.trim(),
-      dob: DateFormat('yyyy-MM-dd').format(selectedDate.value),
-      mobile: mobileController.text.trim(),
-      gender: gender.value.toLowerCase(),
-      status: isPaymentDone.value ? 'Pending' : 'InRequest',
-    );
-    if (response.statusCode == 201) {
-      isImageUploading.value = true;
-      final passId = response.data?.sId ?? '';
-      final uploadImageResponse = await passRepository
-          .uploadProfileAndIdProofImage(
-            passId: passId,
-            profileImage: File(profileImage.value!.path),
-            idProofImage: File(idProofImage.value!.path),
-            onSendProgress: (int sent, int total) {
-              // Handle upload progress if needed
-              uploadProgress.value = ((sent / total) * 100).toInt();
-            },
+    try {
+      final response = await passRepository.createPass(
+        fullname: fullNameController.text.trim(),
+        dob: DateFormat('yyyy-MM-dd').format(selectedDate.value),
+        mobile: mobileController.text.trim(),
+        gender: gender.value.toLowerCase(),
+        status: isPaymentDone.value ? 'Pending' : 'InRequest',
+      );
+      if (response.statusCode == 201) {
+        isImageUploading.value = true;
+        final passId = response.data?.sId ?? '';
+        final uploadImageResponse = await passRepository
+            .uploadProfileAndIdProofImage(
+              passId: passId,
+              profileImage: File(profileImage.value!.path),
+              idProofImage: File(idProofImage.value!.path),
+              onSendProgress: (int sent, int total) {
+                // Handle upload progress if needed
+                uploadProgress.value = ((sent / total) * 100).toInt();
+              },
+            );
+        if (uploadImageResponse.statusCode == 200) {
+          SnackbarUtil.showSuccessSnackbar(
+            title: 'Creation Successful',
+            message: 'Pass created successfully!',
           );
-      if (uploadImageResponse.statusCode == 200) {
-        SnackbarUtil.showSuccessSnackbar(
-          title: 'Creation Successful',
-          message: 'Pass created successfully!',
-        );
-        Get.find<HomeController>().changeTab(2);
+          Get.find<HomeController>().changeTab(2);
+        } else {
+          SnackbarUtil.showErrorSnackbar(
+            title: 'Upload Failed',
+            message:
+                'Failed to upload images: ${uploadImageResponse.statusMessage}',
+          );
+        }
       } else {
         SnackbarUtil.showErrorSnackbar(
-          title: 'Upload Failed',
-          message:
-              'Failed to upload images: ${uploadImageResponse.statusMessage}',
+          title: 'Creation Failed',
+          message: 'Failed to create pass: ${response.statusMessage}',
         );
       }
-    } else {
+    } catch (e) {
       SnackbarUtil.showErrorSnackbar(
-        title: 'Creation Failed',
-        message: 'Failed to create pass: ${response.statusMessage}',
+        title: 'Error',
+        message: 'An error occurred while creating the pass: $e',
       );
+    } finally {
+      isLoading.value = false;
+      isImageUploading.value = false;
     }
-    isLoading.value = false;
-    isImageUploading.value = false;
   }
 
   void selectIdProofImage() async {
