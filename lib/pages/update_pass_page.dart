@@ -23,7 +23,6 @@ class _UpdatePassPageState extends State<UpdatePassPage> {
   @override
   void initState() {
     super.initState();
-    controller.init();
     controller.loadPassData(widget.fullPass);
   }
 

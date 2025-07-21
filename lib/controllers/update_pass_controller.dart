@@ -21,7 +21,6 @@ class UpdatePassController extends GetxController {
   final TextEditingController mobileController = TextEditingController();
   final Rx<DateTime> selectedDate =
       DateTime.now().subtract(const Duration(days: 365 * 13)).obs;
-  final RxBool isMobileVerified = false.obs;
   final RxInt uploadProgress = 0.obs;
 
   final RxString profileNetworkImage = ''.obs;
@@ -31,24 +30,6 @@ class UpdatePassController extends GetxController {
 
   final RxBool isLoading = false.obs;
   final RxBool isImageUploading = false.obs;
-
-  void init() {
-    mobileController.addListener(() {
-      if (mobileController.text.length == 10) {
-        if (_validateMobileNumber(mobileController.text)) {
-          isMobileVerified.value = true;
-        } else {
-          isMobileVerified.value = false;
-          Get.snackbar(
-            'Invalid Mobile Number',
-            'Please enter a valid mobile number',
-          );
-        }
-      } else {
-        isMobileVerified.value = false;
-      }
-    });
-  }
 
   void loadPassData(FullPass fullPass) {
     fullNameController.text = fullPass.fullName ?? '';
@@ -84,17 +65,18 @@ class UpdatePassController extends GetxController {
     // Must start with 9, 8, 7, or 6
     if (!RegExp(r'^[9876]').hasMatch(number)) return false;
 
-    // Check for any digit repeating more than 7 times (e.g., "11111111xx")
+    // Check for any digit repeating more than 6 times (7 or more is invalid)
     for (int i = 0; i <= 9; i++) {
-      if (RegExp('$i{8,}').hasMatch(number)) return false;
+      if (RegExp('$i{7,}').hasMatch(number)) return false;
     }
 
-    // Check for repeated patterns (like "1212" or "123123")
+    // Check for repeated patterns of 4 or more pairs
+    // (3 pairs like "808080" is allowed, but 4 pairs like "80808080" is not)
     for (int size = 2; size <= 4; size++) {
-      for (int i = 0; i <= number.length - size * 3; i++) {
+      for (int i = 0; i <= number.length - size * 4; i++) {
         final pattern = number.substring(i, i + size);
         final repeatedPattern =
-            pattern * 3; // Check if pattern repeats 3+ times
+            pattern * 4; // Check if pattern repeats 4+ times
         if (number.contains(repeatedPattern)) return false;
       }
     }
@@ -203,6 +185,14 @@ class UpdatePassController extends GetxController {
     }
 
     if (mobileController.text.isEmpty || mobileController.text.length != 10) {
+      SnackbarUtil.showErrorSnackbar(
+        title: 'Invalid Mobile Number',
+        message: 'Please enter a valid mobile number!',
+      );
+      return false;
+    }
+
+    if (!_validateMobileNumber(mobileController.text)) {
       SnackbarUtil.showErrorSnackbar(
         title: 'Invalid Mobile Number',
         message: 'Please enter a valid mobile number!',

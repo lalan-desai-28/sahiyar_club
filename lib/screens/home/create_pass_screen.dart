@@ -20,7 +20,6 @@ class _CreatePassScreenState extends State<CreatePassScreen> {
   @override
   void initState() {
     super.initState();
-    _controller.init();
   }
 
   @override
