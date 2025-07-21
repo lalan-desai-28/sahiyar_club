@@ -85,9 +85,17 @@ class PassRepository {
   }) async {
     final formData = FormData.fromMap({
       if (profileImage != null)
-        'profilePhoto': await MultipartFile.fromFile(profileImage.path),
+        'profilePhoto': await MultipartFile.fromFile(
+          profileImage.path,
+          filename: profileImage.path.split('/').last,
+          contentType: DioMediaType('image', 'png'),
+        ),
       if (idProofImage != null)
-        'idProof': await MultipartFile.fromFile(idProofImage.path),
+        'idProof': await MultipartFile.fromFile(
+          idProofImage.path,
+          filename: idProofImage.path.split('/').last,
+          contentType: DioMediaType('image', 'png'),
+        ),
     });
 
     final response = await dioClient.post(
@@ -99,13 +107,7 @@ class PassRepository {
       data: Pass.fromJson(response.data),
       statusCode: response.statusCode,
       statusMessage: response.statusMessage,
-      requestOptions: RequestOptions(
-        onSendProgress: onSendProgress,
-        data: response.data,
-        method: response.requestOptions.method,
-        headers: response.requestOptions.headers,
-        queryParameters: response.requestOptions.queryParameters,
-      ),
+      requestOptions: response.requestOptions,
     );
   }
 
