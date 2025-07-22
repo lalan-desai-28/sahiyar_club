@@ -284,6 +284,7 @@ class UpdatePassController extends GetxController {
     final picker = ImagePicker();
     final XFile? pickedFile = await picker.pickImage(
       source: source == 'camera' ? ImageSource.camera : ImageSource.gallery,
+      imageQuality: 16,
     );
 
     if (pickedFile != null) {

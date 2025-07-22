@@ -42,7 +42,12 @@ class _UpdatePassPageState extends State<UpdatePassPage> {
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+        padding: const EdgeInsets.only(
+          left: 16,
+          right: 16,
+          bottom: 16,
+          top: 16,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [

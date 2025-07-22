@@ -29,7 +29,7 @@ class _ProfileAvatarWidgetState extends State<ProfileAvatarWidget> {
       final ImagePicker picker = ImagePicker();
       final XFile? image = await picker.pickImage(
         source: ImageSource.camera,
-        imageQuality: 25, // Reduce quality for better performance
+        // imageQuality: 10,
       );
 
       if (image != null) {
@@ -45,7 +45,7 @@ class _ProfileAvatarWidgetState extends State<ProfileAvatarWidget> {
       final ImagePicker picker = ImagePicker();
       final XFile? image = await picker.pickImage(
         source: ImageSource.gallery,
-        imageQuality: 17, // Reduce quality for better performance
+        // imageQuality: 10,
       );
 
       if (image != null) {
@@ -59,7 +59,6 @@ class _ProfileAvatarWidgetState extends State<ProfileAvatarWidget> {
   Future<void> _cropImage(String imagePath) async {
     try {
       final croppedFile = await ImageCropper().cropImage(
-        compressQuality: 17,
         compressFormat: ImageCompressFormat.png,
         sourcePath: imagePath,
         aspectRatio: const CropAspectRatio(

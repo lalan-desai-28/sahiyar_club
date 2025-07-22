@@ -203,9 +203,10 @@ class CreatePassController extends GetxController {
 
   void submitForm() async {
     if (isLoading.value || isImageUploading.value) return;
-    bool isValid = isFormValid();
-    if (!isValid) return;
+    if (!isFormValid()) return;
+
     isLoading.value = true;
+    isImageUploading.value = true;
 
     try {
       final response = await passRepository.createPass(
@@ -214,33 +215,16 @@ class CreatePassController extends GetxController {
         mobile: mobileController.text.trim(),
         gender: gender.value.toLowerCase(),
         status: isPaymentDone.value ? 'Pending' : 'InRequest',
+        profilePhoto: File(profileImage.value!.path),
+        idProof: File(idProofImage.value!.path),
       );
+
       if (response.statusCode == 201) {
-        isImageUploading.value = true;
-        final passId = response.data?.sId ?? '';
-        final uploadImageResponse = await passRepository
-            .uploadProfileAndIdProofImage(
-              passId: passId,
-              profileImage: File(profileImage.value!.path),
-              idProofImage: File(idProofImage.value!.path),
-              onSendProgress: (int sent, int total) {
-                // Handle upload progress if needed
-                uploadProgress.value = ((sent / total) * 100).toInt();
-              },
-            );
-        if (uploadImageResponse.statusCode == 200) {
-          SnackbarUtil.showSuccessSnackbar(
-            title: 'Creation Successful',
-            message: 'Pass created successfully!',
-          );
-          Get.find<HomeController>().changeTab(2);
-        } else {
-          SnackbarUtil.showErrorSnackbar(
-            title: 'Upload Failed',
-            message:
-                'Failed to upload images: ${uploadImageResponse.statusMessage}',
-          );
-        }
+        SnackbarUtil.showSuccessSnackbar(
+          title: 'Creation Successful',
+          message: 'Pass created successfully!',
+        );
+        Get.find<HomeController>().changeTab(2);
       } else {
         SnackbarUtil.showErrorSnackbar(
           title: 'Creation Failed',
@@ -265,6 +249,7 @@ class CreatePassController extends GetxController {
     final picker = ImagePicker();
     final XFile? pickedFile = await picker.pickImage(
       source: source == 'camera' ? ImageSource.camera : ImageSource.gallery,
+      imageQuality: 16,
     );
 
     if (pickedFile != null) {
