@@ -13,7 +13,7 @@ class SnackbarUtil {
       snackPosition: SnackPosition.BOTTOM,
       backgroundColor: Colors.green,
       colorText: Colors.white,
-      duration: const Duration(seconds: 1),
+      duration: const Duration(seconds: 2),
     );
   }
 
@@ -25,7 +25,7 @@ class SnackbarUtil {
       snackPosition: SnackPosition.BOTTOM,
       backgroundColor: Colors.red,
       colorText: Colors.white,
-      duration: const Duration(seconds: 1),
+      duration: const Duration(seconds: 4),
     );
   }
 }

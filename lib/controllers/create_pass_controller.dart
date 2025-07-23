@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:sahiyar_club/controllers/home_controller.dart';
@@ -252,8 +253,22 @@ class CreatePassController extends GetxController {
       imageQuality: 16,
     );
 
-    if (pickedFile != null) {
-      idProofImage.value = File(pickedFile.path);
+    // passs it to image cropper
+    if (pickedFile == null) {
+      SnackbarUtil.showErrorSnackbar(
+        title: 'Image Selection Cancelled',
+        message: 'No image was selected.',
+      );
+      return;
+    }
+
+    final croppedFile = await ImageCropper().cropImage(
+      sourcePath: pickedFile.path,
+      
+    );
+
+    if (croppedFile != null) {
+      idProofImage.value = File(croppedFile.path);
     } else {
       SnackbarUtil.showErrorSnackbar(
         title: 'Image Selection Cancelled',

@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:sahiyar_club/utils/image_utils.dart';
+import 'package:sahiyar_club/utils/snackbar_util.dart';
 
 class ProfileAvatarWidget extends StatefulWidget {
   const ProfileAvatarWidget({
@@ -27,10 +29,7 @@ class _ProfileAvatarWidgetState extends State<ProfileAvatarWidget> {
   Future<void> _pickImageFromCamera() async {
     try {
       final ImagePicker picker = ImagePicker();
-      final XFile? image = await picker.pickImage(
-        source: ImageSource.camera,
-        // imageQuality: 10,
-      );
+      final XFile? image = await picker.pickImage(source: ImageSource.camera);
 
       if (image != null) {
         await _cropImage(image.path);
@@ -43,10 +42,7 @@ class _ProfileAvatarWidgetState extends State<ProfileAvatarWidget> {
   Future<void> _pickImageFromGallery() async {
     try {
       final ImagePicker picker = ImagePicker();
-      final XFile? image = await picker.pickImage(
-        source: ImageSource.gallery,
-        // imageQuality: 10,
-      );
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
       if (image != null) {
         await _cropImage(image.path);
@@ -58,34 +54,7 @@ class _ProfileAvatarWidgetState extends State<ProfileAvatarWidget> {
 
   Future<void> _cropImage(String imagePath) async {
     try {
-      final croppedFile = await ImageCropper().cropImage(
-        compressFormat: ImageCompressFormat.png,
-        sourcePath: imagePath,
-        aspectRatio: const CropAspectRatio(
-          ratioX: 2.5,
-          ratioY: 3.5,
-        ), // Square crop for profile
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: 'Crop Profile Photo',
-            toolbarColor: Colors.blue,
-            toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.square,
-            lockAspectRatio: true, // Lock to square aspect ratio
-
-            showCropGrid: true,
-            hideBottomControls: false,
-            cropGridRowCount: 3,
-            cropGridColumnCount: 3,
-          ),
-          IOSUiSettings(
-            title: 'Crop Profile Photo',
-            aspectRatioLockEnabled: true,
-            resetAspectRatioEnabled: false,
-            aspectRatioPresets: [CropAspectRatioPreset.square],
-          ),
-        ],
-      );
+      final croppedFile = await ImageUtils.cropImage(File(imagePath));
 
       if (croppedFile != null) {
         widget.onImageSelected(File(croppedFile.path));
@@ -96,13 +65,7 @@ class _ProfileAvatarWidgetState extends State<ProfileAvatarWidget> {
   }
 
   void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    SnackbarUtil.showErrorSnackbar(title: "Error", message: message);
   }
 
   Future<void> _showImagePickerOptions() async {

@@ -2,7 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sahiyar_club/controllers/create_pass_controller.dart';
+import 'package:sahiyar_club/statics/app_statics.dart';
 import 'package:sahiyar_club/widgets/custom_button.dart';
+import 'package:sahiyar_club/widgets/custom_dropdown.dart';
 import 'package:sahiyar_club/widgets/custom_form_field.dart';
 import 'package:sahiyar_club/widgets/profile_avatar_widget.dart';
 import 'package:intl/intl.dart';
@@ -15,7 +17,7 @@ class CreatePassScreen extends StatefulWidget {
 }
 
 class _CreatePassScreenState extends State<CreatePassScreen> {
-  final CreatePassController _controller = CreatePassController();
+  final CreatePassController _controller = Get.find<CreatePassController>();
 
   @override
   void initState() {
@@ -77,113 +79,22 @@ class _CreatePassScreenState extends State<CreatePassScreen> {
           ),
           const SizedBox(height: 14),
 
-          // Gender Field
           Obx(
-            () => Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Gender',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.outline.withOpacity(0.5),
-                    ),
-                  ),
-                  child: DropdownButton<String>(
-                    value:
-                        _controller.gender.value.isEmpty
-                            ? null
-                            : _controller.gender.value,
-                    hint: Text(
-                      'Select Gender',
-                      style: TextStyle(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withOpacity(0.6),
-                      ),
-                    ),
-                    isExpanded: true,
-                    underline: const SizedBox(),
-                    icon: Icon(
-                      Icons.arrow_drop_down,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    dropdownColor: Theme.of(context).colorScheme.surface,
-                    items: [
-                      DropdownMenuItem(
-                        value: 'Male',
-                        child: Row(
-                          children: [
-                            Icon(Icons.male, color: Colors.blue[600], size: 20),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Male',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Female',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.female,
-                              color: Colors.pink[600],
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Female',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Kid',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.child_care,
-                              color: Colors.orange[600],
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Kid',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                    onChanged:
-                        (value) => _controller.gender.value = value ?? '',
-                  ),
-                ),
+            () => CustomDropdown(
+              label: 'Gender',
+              items: [
+                'Male',
+                'Female',
+                'Kid',
+                // add one to item based on condition
+                if (AppStatics.currentUser!.agentCode == "AGT001") 'Guest',
               ],
+              selectedValue: _controller.gender.value,
+              onChanged: (value) => _controller.gender.value = value!,
+              itemToString: (item) => item,
             ),
           ),
+
           const SizedBox(height: 14),
 
           // Date of Birth (Only for Kids)
@@ -281,7 +192,7 @@ class _CreatePassScreenState extends State<CreatePassScreen> {
                     ),
                   ),
                   Text(
-                    _controller.isPaymentDone.value ? 'Paid' : 'In Request',
+                    _controller.isPaymentDone.value ? 'Paid' : 'Pending',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color:
                           _controller.isPaymentDone.value
