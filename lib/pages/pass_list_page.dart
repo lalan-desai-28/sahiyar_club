@@ -16,7 +16,15 @@ class _PassListPageState extends State<PassListPage> {
   @override
   void initState() {
     super.initState();
+    _controller.onInit();
     _controller.fetchMyPasses();
+  }
+
+  @override
+  void dispose() {
+    _controller.scrollController.dispose();
+    _controller.onClose();
+    super.dispose();
   }
 
   @override
@@ -56,6 +64,14 @@ class _PassListPageState extends State<PassListPage> {
     return RefreshIndicator(
       onRefresh: _controller.refreshPasses,
       child: ListView.builder(
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
+        cacheExtent: 1500,
+        itemExtent: 138,
+        addAutomaticKeepAlives: true, // Keep alive for better performance
+        addRepaintBoundaries: true, // Automatic repaint boundaries
+        addSemanticIndexes: true,
         controller: _controller.scrollController,
         itemCount:
             _controller.passes.length + (_controller.hasMoreData.value ? 1 : 0),

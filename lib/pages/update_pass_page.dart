@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:get/state_manager.dart';
 import 'package:sahiyar_club/controllers/update_pass_controller.dart';
 import 'package:sahiyar_club/models/pass_full.dart';
+import 'package:sahiyar_club/statics/app_statics.dart';
 import 'package:sahiyar_club/widgets/custom_button.dart';
+import 'package:sahiyar_club/widgets/custom_dropdown.dart';
 import 'package:sahiyar_club/widgets/custom_form_field.dart';
 import 'package:sahiyar_club/widgets/profile_avatar_widget.dart';
 import 'package:intl/intl.dart';
@@ -19,6 +21,7 @@ class UpdatePassPage extends StatefulWidget {
 
 class _UpdatePassPageState extends State<UpdatePassPage> {
   final UpdatePassController controller = UpdatePassController();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -42,6 +45,8 @@ class _UpdatePassPageState extends State<UpdatePassPage> {
         centerTitle: true,
       ),
       body: SingleChildScrollView(
+        reverse: true,
+        controller: _scrollController,
         padding: const EdgeInsets.only(
           left: 16,
           right: 16,
@@ -67,12 +72,13 @@ class _UpdatePassPageState extends State<UpdatePassPage> {
             const SizedBox(height: 16),
 
             // Gender Field
-            if (widget.fullPass.gender != "kid") ...[
+            if (widget.fullPass.gender != "kid" &&
+                widget.fullPass.gender != "guest") ...[
               _buildGenderField(),
               const SizedBox(height: 16),
             ] else ...[
               // Date of Birth (Only for Kids)
-              _buildDatePicker(),
+              if (widget.fullPass.gender == "kid") _buildDatePicker(),
               const SizedBox(height: 24),
 
               // Submit Button
@@ -129,106 +135,20 @@ class _UpdatePassPageState extends State<UpdatePassPage> {
 
   Widget _buildGenderField() {
     return Obx(
-      () => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Gender',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
-              ),
-            ),
-            child: DropdownButton<String>(
-              value:
-                  controller.gender.value.isEmpty
-                      ? null
-                      : controller.gender.value,
-              hint: Text(
-                'Select Gender',
-                style: TextStyle(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withOpacity(0.6),
-                ),
-              ),
-              isExpanded: true,
-              underline: const SizedBox(),
-              icon: Icon(
-                Icons.arrow_drop_down,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              dropdownColor: Theme.of(context).colorScheme.surface,
-              items: [
-                DropdownMenuItem(
-                  value: 'Male',
-                  child: Row(
-                    children: [
-                      Icon(Icons.male, color: Colors.blue[600], size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Male',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                DropdownMenuItem(
-                  value: 'Female',
-                  child: Row(
-                    children: [
-                      Icon(Icons.female, color: Colors.pink[600], size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Female',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // DropdownMenuItem(
-                //   value: 'Kid',
-                //   child: Row(
-                //     children: [
-                //       Icon(
-                //         Icons.child_care,
-                //         color: Colors.orange[600],
-                //         size: 20,
-                //       ),
-                //       const SizedBox(width: 8),
-                //       Text(
-                //         'Kid',
-                //         style: TextStyle(
-                //           color: Theme.of(context).colorScheme.onSurface,
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // ),
-              ],
-              onChanged: (value) {
-                if (value != null) {
-                  controller.gender.value = value;
-                }
-              },
-            ),
-          ),
+      () => CustomDropdown(
+        label: 'Gender',
+        items: [
+          'Male',
+          'Female',
+          if (AppStatics.currentUser!.agentCode == "AGT001") 'guest',
         ],
+        selectedValue: controller.gender.value,
+        onChanged: (value) {
+          if (value != null) {
+            controller.gender.value = value;
+          }
+        },
+        itemToString: (item) => item,
       ),
     );
   }

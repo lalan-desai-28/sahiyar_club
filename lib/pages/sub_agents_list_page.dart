@@ -11,6 +11,15 @@ class SubAgentsListPage extends StatefulWidget {
 }
 
 class _SubAgentsListPageState extends State<SubAgentsListPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Fetch sub agents after the first frame is rendered
+      Get.find<SubAgentsListController>().fetchSubAgents();
+    });
+  }
+
   final SubAgentsListController controller =
       Get.find<SubAgentsListController>();
 
@@ -28,6 +37,12 @@ class _SubAgentsListPageState extends State<SubAgentsListPage> {
             child: Text(subAgent.fullName?.substring(0, 1) ?? '?'),
           ),
           subtitle: Text(subAgent.agentCode ?? 'No Agent Code'),
+          trailing: IconButton(
+            icon: const Icon(Icons.arrow_forward_ios),
+            onPressed: () {
+              // show dashboard of sub agent
+            },
+          ),
         );
       },
       itemCount: controller.subAgents.length,

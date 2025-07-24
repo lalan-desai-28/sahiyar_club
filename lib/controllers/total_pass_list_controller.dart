@@ -29,7 +29,7 @@ class TotalPassListController extends GetxController {
     'RejectedForQuery',
   ];
 
-  final genderOptions = ['male', 'female', 'kid'];
+
 
   @override
   void onInit() {

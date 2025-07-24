@@ -14,6 +14,18 @@ import 'package:path/path.dart';
 class PassRepository {
   final DioClient dioClient = Get.find<DioClient>();
 
+  String capitalizeFirstLetterOfEachWord(String text) {
+    return text
+        .split(' ')
+        .map(
+          (word) =>
+              word.isNotEmpty
+                  ? word[0].toUpperCase() + word.substring(1).toLowerCase()
+                  : '',
+        )
+        .join(' ');
+  }
+
   /// Converts Uint8List to temporary File
   Future<File> uint8ListToFile(Uint8List data, String filename) async {
     final tempDir = await getTemporaryDirectory();
@@ -50,21 +62,6 @@ class PassRepository {
     }
   }
 
-  /// Cleans up temporary files
-  Future<void> cleanupFiles(List<File?> files) async {
-    for (final file in files) {
-      if (file != null) {
-        try {
-          if (await file.exists()) {
-            await file.delete();
-          }
-        } catch (e) {
-          print('Warning: Failed to delete temporary file: ${file.path} - $e');
-        }
-      }
-    }
-  }
-
   Future<Response<Pass>> createPass({
     required String fullname,
     required String mobile,
@@ -74,58 +71,35 @@ class PassRepository {
     required File profilePhoto,
     required File idProof,
   }) async {
-    File? profilePhotoFile;
-    File? idProofFile;
+    final formData = FormData.fromMap({
+      'pass': jsonEncode({
+        'passType': 'season',
+        'fullName': capitalizeFirstLetterOfEachWord(fullname),
+        'gender': gender,
+        'dob': dob,
+        'mobile': mobile,
+        'status': status,
+      }),
+      'profilePhoto': await MultipartFile.fromFile(
+        profilePhoto.path,
+        filename: basename(profilePhoto.path),
+        contentType: DioMediaType('image', 'jpeg'),
+      ),
+      'idProof': await MultipartFile.fromFile(
+        idProof.path,
+        filename: basename(idProof.path),
+        contentType: DioMediaType('image', 'jpeg'),
+      ),
+    });
 
-    try {
-      // Compress images
-      profilePhotoFile = await compressImageFile(
-        profilePhoto,
-        'profile_photo_${DateTime.now().millisecondsSinceEpoch}.jpeg',
-      );
+    final response = await dioClient.post('/passes/pass', data: formData);
 
-      idProofFile = await compressImageFile(
-        idProof,
-        'id_proof_${DateTime.now().millisecondsSinceEpoch}.jpeg',
-      );
-
-      if (profilePhotoFile == null || idProofFile == null) {
-        throw Exception('Image compression failed');
-      }
-
-      final formData = FormData.fromMap({
-        'pass': jsonEncode({
-          'passType': 'season',
-          'fullName': fullname,
-          'gender': gender,
-          'dob': dob,
-          'mobile': mobile,
-          'status': status,
-        }),
-        'profilePhoto': await MultipartFile.fromFile(
-          profilePhotoFile.path,
-          filename: basename(profilePhotoFile.path),
-          contentType: DioMediaType('image', 'jpeg'),
-        ),
-        'idProof': await MultipartFile.fromFile(
-          idProofFile.path,
-          filename: basename(idProofFile.path),
-          contentType: DioMediaType('image', 'jpeg'),
-        ),
-      });
-
-      final response = await dioClient.post('/passes/pass', data: formData);
-
-      return Response<Pass>(
-        data: Pass.fromJson(response.data),
-        statusCode: response.statusCode,
-        statusMessage: response.statusMessage,
-        requestOptions: response.requestOptions,
-      );
-    } finally {
-      // Clean up temporary files
-      await cleanupFiles([profilePhotoFile, idProofFile]);
-    }
+    return Response<Pass>(
+      data: Pass.fromJson(response.data),
+      statusCode: response.statusCode,
+      statusMessage: response.statusMessage,
+      requestOptions: response.requestOptions,
+    );
   }
 
   Future<Response<Pass>> updatePass({
@@ -138,7 +112,7 @@ class PassRepository {
     final response = await dioClient.put(
       '/passes/$passId',
       data: {
-        "fullName": fullName,
+        "fullName": capitalizeFirstLetterOfEachWord(fullName),
         "gender": gender,
         "dob": dob,
         "mobile": mobile,
@@ -221,7 +195,7 @@ class PassRepository {
       );
     } finally {
       // Clean up temporary files
-      await cleanupFiles([compressedProfileImage, compressedIdProofImage]);
+      // await cleanupFiles([compressedProfileImage, compressedIdProofImage]);
     }
   }
 
@@ -237,7 +211,7 @@ class PassRepository {
         'page': page ?? 1,
         'limit': limit ?? 5,
         if (status != null) 'passStatus': status,
-        if (gender != null) 'gender': gender,
+        if (gender != null) 'gender': gender.toLowerCase(),
       },
     );
 

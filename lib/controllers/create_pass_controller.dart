@@ -1,12 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:sahiyar_club/controllers/home_controller.dart';
 import 'package:sahiyar_club/repositories/pass_repository.dart';
+import 'package:sahiyar_club/utils/image_utils.dart';
 import 'package:sahiyar_club/utils/snackbar_util.dart';
 
 class CreatePassController extends GetxController {
@@ -18,16 +18,11 @@ class CreatePassController extends GetxController {
   final TextEditingController mobileController = TextEditingController();
   final Rx<DateTime> selectedDate =
       DateTime.now().subtract(const Duration(days: 365 * 13)).obs;
-
   final RxInt uploadProgress = 0.obs;
-
   final RxString gender = 'Male'.obs;
-
   final Rx<File?> idProofImage = Rx<File?>(null);
   final RxBool isPaymentDone = true.obs;
-
   final RxBool isLoading = false.obs;
-  final RxBool isImageUploading = false.obs;
 
   bool _validateMobileNumber(String number) {
     // Must be exactly 10 digits
@@ -202,12 +197,24 @@ class CreatePassController extends GetxController {
     return true;
   }
 
+  void resetForm() {
+    fullNameController.clear();
+    mobileController.clear();
+    selectedDate.value = DateTime.now().subtract(
+      const Duration(days: 365 * 13),
+    );
+    profileImage.value = null;
+    idProofImage.value = null;
+    gender.value = "Male";
+    FocusScope.of(Get.context!).unfocus();
+    SystemChannels.textInput.invokeMethod('TextInput.hide');
+  }
+
   void submitForm() async {
-    if (isLoading.value || isImageUploading.value) return;
+    if (isLoading.value) return;
     if (!isFormValid()) return;
 
     isLoading.value = true;
-    isImageUploading.value = true;
 
     try {
       final response = await passRepository.createPass(
@@ -221,11 +228,13 @@ class CreatePassController extends GetxController {
       );
 
       if (response.statusCode == 201) {
+        resetForm();
+        final newPassCode = response.data!.passCode;
         SnackbarUtil.showSuccessSnackbar(
-          title: 'Creation Successful',
+          title: '$newPassCode created!',
           message: 'Pass created successfully!',
         );
-        Get.find<HomeController>().changeTab(2);
+        // Get.find<HomeController>().changeTab(2);
       } else {
         SnackbarUtil.showErrorSnackbar(
           title: 'Creation Failed',
@@ -239,7 +248,6 @@ class CreatePassController extends GetxController {
       );
     } finally {
       isLoading.value = false;
-      isImageUploading.value = false;
     }
   }
 
@@ -250,7 +258,6 @@ class CreatePassController extends GetxController {
     final picker = ImagePicker();
     final XFile? pickedFile = await picker.pickImage(
       source: source == 'camera' ? ImageSource.camera : ImageSource.gallery,
-      imageQuality: 16,
     );
 
     // passs it to image cropper
@@ -262,9 +269,9 @@ class CreatePassController extends GetxController {
       return;
     }
 
-    final croppedFile = await ImageCropper().cropImage(
-      sourcePath: pickedFile.path,
-      
+    final croppedFile = await ImageUtils.cropImage(
+      imageFile: File(pickedFile.path),
+      cropType: CropType.idProof,
     );
 
     if (croppedFile != null) {

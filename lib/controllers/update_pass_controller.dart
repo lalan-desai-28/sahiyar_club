@@ -9,10 +9,12 @@ import 'package:sahiyar_club/constants/api_config_constants.dart';
 import 'package:sahiyar_club/controllers/home_controller.dart';
 import 'package:sahiyar_club/models/pass_full.dart';
 import 'package:sahiyar_club/repositories/pass_repository.dart';
+import 'package:sahiyar_club/utils/image_utils.dart';
 import 'package:sahiyar_club/utils/snackbar_util.dart';
 
 class UpdatePassController extends GetxController {
   final PassRepository passRepository = PassRepository();
+  
 
   Rx<File?> profileImage = Rx<File?>(null);
   final Rx<File?> idProofImage = Rx<File?>(null);
@@ -184,6 +186,16 @@ class UpdatePassController extends GetxController {
       return false;
     }
 
+    final names = fullNameController.text.trim().split(' ');
+    if (names.length < 2 || names[0].toLowerCase() == names[1].toLowerCase()) {
+      SnackbarUtil.showErrorSnackbar(
+        title: 'Invalid Name',
+        message:
+            'Please enter a valid full name! It should contain both first and last names.',
+      );
+      return false;
+    }
+
     if (mobileController.text.isEmpty || mobileController.text.length != 10) {
       SnackbarUtil.showErrorSnackbar(
         title: 'Invalid Mobile Number',
@@ -288,7 +300,14 @@ class UpdatePassController extends GetxController {
     );
 
     if (pickedFile != null) {
-      idProofImage.value = File(pickedFile.path);
+      // go through crop image
+
+      final croppedImage = await ImageUtils.cropImage(
+        imageFile: File(pickedFile.path),
+        cropType: CropType.idProof,
+      );
+
+      idProofImage.value = croppedImage;
     } else {
       SnackbarUtil.showErrorSnackbar(
         title: 'Image Selection Cancelled',

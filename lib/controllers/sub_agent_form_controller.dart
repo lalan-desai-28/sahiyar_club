@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:sahiyar_club/controllers/sub_agents_list_controller.dart';
 import 'package:sahiyar_club/repositories/users_repository.dart';
 import 'package:sahiyar_club/statics/app_statics.dart';
 import 'package:sahiyar_club/utils/snackbar_util.dart';
@@ -17,6 +18,7 @@ class SubAgentFormController extends GetxController {
   final isLoading = false.obs;
 
   void createSubAgent() async {
+    if (isLoading.value) return;
     if (fullNameController.text.isEmpty ||
         emailController.text.isEmpty ||
         mobileController.text.isEmpty ||
@@ -41,8 +43,13 @@ class SubAgentFormController extends GetxController {
           message: 'Sub Agent created successfully',
         );
         Get.toNamed(AppRoutes.HOME);
+        resetForm();
+        Get.find<SubAgentsListController>().fetchSubAgents();
       } else {
-        Get.snackbar('Error', 'Failed to create Sub Agent');
+        SnackbarUtil.showErrorSnackbar(
+          title: 'Error',
+          message: 'Failed to create Sub Agent: ${result.statusMessage}',
+        );
       }
     } on Exception catch (e) {
       SnackbarUtil.showErrorSnackbar(
@@ -52,5 +59,12 @@ class SubAgentFormController extends GetxController {
     }
 
     isLoading.value = false;
+  }
+
+  void resetForm() {
+    fullNameController.clear();
+    emailController.clear();
+    mobileController.clear();
+    passwordController.clear();
   }
 }

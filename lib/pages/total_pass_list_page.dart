@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sahiyar_club/controllers/total_pass_list_controller.dart';
+import 'package:sahiyar_club/statics/app_statics.dart';
+import 'package:sahiyar_club/widgets/custom_dropdown.dart';
 import 'package:sahiyar_club/widgets/pass_card.dart';
 
 class TotalPassListPage extends StatefulWidget {
@@ -296,192 +298,39 @@ class _FilterBottomSheet extends StatelessWidget {
   }
 
   Widget _buildFilters(BuildContext context) {
+    final genderOptions = [
+      'Male',
+      'Female',
+      'Kid',
+      if (AppStatics.currentUser?.agentCode == "AGT001") 'Guest',
+    ];
+
     return Column(
       children: [
         // Status Dropdown
         Obx(
-          () => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Status',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.outline.withOpacity(0.5),
-                  ),
-                ),
-                child: DropdownButton<String>(
-                  value: controller.selectedStatus.value,
-                  hint: Text(
-                    'Select Status',
-                    style: TextStyle(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withOpacity(0.6),
-                    ),
-                  ),
-                  isExpanded: true,
-                  underline: const SizedBox(),
-                  icon: Icon(
-                    Icons.arrow_drop_down,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  dropdownColor: Theme.of(context).colorScheme.surface,
-                  items:
-                      controller.statusOptions.map((String status) {
-                        IconData icon;
-                        Color color;
-
-                        switch (status.toLowerCase()) {
-                          case 'inrequest':
-                            icon = Icons.send;
-                            color = Colors.blue[600]!;
-                            break;
-                          case 'pending':
-                            icon = Icons.pending;
-                            color = Colors.orange[600]!;
-                            break;
-                          case 'approved':
-                            icon = Icons.check_circle;
-                            color = Colors.green[600]!;
-                            break;
-                          case 'rejectedforquery':
-                            icon = Icons.error;
-                            color = Colors.red[600]!;
-                            break;
-                          case 'printed':
-                            icon = Icons.print;
-                            color = Colors.purple[600]!;
-                            break;
-                          default:
-                            icon = Icons.help_outline;
-                            color = Colors.grey[600]!;
-                        }
-
-                        return DropdownMenuItem<String>(
-                          value: status,
-                          child: Row(
-                            children: [
-                              Icon(icon, color: color, size: 20),
-                              const SizedBox(width: 8),
-                              Text(
-                                status.toUpperCase(),
-                                style: TextStyle(
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                  onChanged: (value) => controller.selectedStatus.value = value,
-                ),
-              ),
-            ],
+          () => CustomDropdown(
+            label: 'Status',
+            items: controller.statusOptions,
+            selectedValue: controller.selectedStatus.value,
+            onChanged: (value) {
+              controller.selectedStatus.value = value!;
+            },
+            itemToString: (item) => item,
           ),
         ),
         const SizedBox(height: 16),
 
         // Gender Dropdown
         Obx(
-          () => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Gender',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.outline.withOpacity(0.5),
-                  ),
-                ),
-                child: DropdownButton<String>(
-                  value: controller.selectedGender.value,
-                  hint: Text(
-                    'Select Gender',
-                    style: TextStyle(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withOpacity(0.6),
-                    ),
-                  ),
-                  isExpanded: true,
-                  underline: const SizedBox(),
-                  icon: Icon(
-                    Icons.arrow_drop_down,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  dropdownColor: Theme.of(context).colorScheme.surface,
-                  items:
-                      controller.genderOptions.map((String gender) {
-                        IconData icon;
-                        Color color;
-
-                        switch (gender.toLowerCase()) {
-                          case 'male':
-                            icon = Icons.male;
-                            color = Colors.blue[600]!;
-                            break;
-                          case 'female':
-                            icon = Icons.female;
-                            color = Colors.pink[600]!;
-                            break;
-                          case 'kid':
-                            icon = Icons.child_care;
-                            color = Colors.orange[600]!;
-                            break;
-                          default:
-                            icon = Icons.person;
-                            color = Colors.grey[600]!;
-                        }
-
-                        return DropdownMenuItem<String>(
-                          value: gender,
-                          child: Row(
-                            children: [
-                              Icon(icon, color: color, size: 20),
-                              const SizedBox(width: 8),
-                              Text(
-                                gender.toUpperCase(),
-                                style: TextStyle(
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                  onChanged: (value) => controller.selectedGender.value = value,
-                ),
-              ),
-            ],
+          () => CustomDropdown(
+            label: 'Gender',
+            items: genderOptions,
+            selectedValue: controller.selectedGender.value,
+            onChanged: (value) {
+              controller.selectedGender.value = value!;
+            },
+            itemToString: (item) => item,
           ),
         ),
       ],

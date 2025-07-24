@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class CustomFormField extends StatefulWidget {
   final TextEditingController controller;
@@ -13,6 +14,8 @@ class CustomFormField extends StatefulWidget {
   final int? maxLength;
   final bool enabled;
   final bool readOnly;
+  final bool allowOnlyAlphabetic;
+  final VoidCallback? onTap;
 
   const CustomFormField({
     super.key,
@@ -28,6 +31,8 @@ class CustomFormField extends StatefulWidget {
     this.maxLength,
     this.enabled = true,
     this.readOnly = false,
+    this.allowOnlyAlphabetic = false,
+    this.onTap,
   });
 
   @override
@@ -92,6 +97,11 @@ class _CustomFormFieldState extends State<CustomFormField> {
               });
             },
             child: TextFormField(
+              onTap: widget.onTap,
+              inputFormatters: [
+                if (widget.allowOnlyAlphabetic)
+                  FilteringTextInputFormatter.allow(RegExp(r'^[a-zA-Z\s]*$')),
+              ],
               controller: widget.controller,
               obscureText: widget.obscureText,
               keyboardType: widget.keyboardType,

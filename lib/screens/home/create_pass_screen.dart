@@ -27,6 +27,7 @@ class _CreatePassScreenState extends State<CreatePassScreen> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      reverse: true,
       padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -35,7 +36,7 @@ class _CreatePassScreenState extends State<CreatePassScreen> {
 
           Obx(
             () => ProfileAvatarWidget(
-              isUploading: _controller.isImageUploading.value,
+              isUploading: _controller.isLoading.value,
               image:
                   _controller.profileImage.value != null
                       ? Image.file(_controller.profileImage.value!)
@@ -66,6 +67,8 @@ class _CreatePassScreenState extends State<CreatePassScreen> {
             label: 'Full Name',
             keyboardType: TextInputType.name,
             placeholder: "Name + Surname",
+
+            allowOnlyAlphabetic: true,
           ),
           const SizedBox(height: 14),
 

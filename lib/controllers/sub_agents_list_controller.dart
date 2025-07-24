@@ -8,12 +8,6 @@ class SubAgentsListController extends GetxController {
   final RxBool isLoading = true.obs;
   final UsersRepository usersRepository = UsersRepository();
 
-  @override
-  void onInit() {
-    super.onInit();
-    fetchSubAgents();
-  }
-
   void fetchSubAgents() async {
     isLoading.value = true;
     try {

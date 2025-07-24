@@ -54,7 +54,9 @@ class _ProfileAvatarWidgetState extends State<ProfileAvatarWidget> {
 
   Future<void> _cropImage(String imagePath) async {
     try {
-      final croppedFile = await ImageUtils.cropImage(File(imagePath));
+      final croppedFile = await ImageUtils.cropImage(
+        imageFile: File(imagePath),
+      );
 
       if (croppedFile != null) {
         widget.onImageSelected(File(croppedFile.path));

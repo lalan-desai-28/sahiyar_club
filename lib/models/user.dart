@@ -4,6 +4,7 @@ class User {
   String? id;
   String? firstName;
   String? lastName;
+  String? nickName;
   String? email;
   String? mobile;
   String? gender;
@@ -19,6 +20,7 @@ class User {
     this.firstName,
     this.lastName,
     this.email,
+    this.nickName,
     this.mobile,
     this.gender,
     this.role,
@@ -54,6 +56,7 @@ class User {
       email: userJson['email'],
       mobile: userJson['mobile'],
       gender: userJson['gender'],
+      nickName: userJson['nickName'],
       fullName: fullName,
       role: userJson['role'],
       agentCode: userJson['agentCode'],
@@ -73,6 +76,7 @@ class User {
       'lastName': lastName,
       'email': email,
       'mobile': mobile,
+      'nickName': nickName,
       'gender': gender,
       'role': role,
       'agentCode': agentCode,

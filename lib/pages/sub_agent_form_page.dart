@@ -45,7 +45,13 @@ class _SubAgentFormPageState extends State<SubAgentFormPage> {
               keyboardType: TextInputType.visiblePassword,
             ),
             const SizedBox(height: 5),
-            CustomButton(label: 'Create', onPressed: controller.createSubAgent),
+            Obx(
+              () => CustomButton(
+                label: 'Create',
+                onPressed: controller.createSubAgent,
+                isLoading: controller.isLoading.value,
+              ),
+            ),
           ],
         ),
       ),
