@@ -27,22 +27,32 @@ class _SubAgentFormPageState extends State<SubAgentFormPage> {
               controller: controller.fullNameController,
               label: 'Full Name',
               keyboardType: TextInputType.name,
+              placeholder: "Name + Surname",
+            ),
+            CustomFormField(
+              controller: controller.nickNameController,
+              label: 'Nick Name',
+              keyboardType: TextInputType.name,
+              placeholder: "Short name (That you can remember)",
             ),
             CustomFormField(
               controller: controller.emailController,
               label: 'Email',
               keyboardType: TextInputType.emailAddress,
+              placeholder: "example@mail.com",
             ),
             CustomFormField(
               controller: controller.mobileController,
               label: 'Mobile',
               keyboardType: TextInputType.phone,
               maxLength: 10,
+              placeholder: "10 digit mobile number",
             ),
             CustomFormField(
               controller: controller.passwordController,
               label: 'Password',
               keyboardType: TextInputType.visiblePassword,
+              placeholder: "Password",
             ),
             const SizedBox(height: 5),
             Obx(

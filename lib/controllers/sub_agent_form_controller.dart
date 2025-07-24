@@ -14,6 +14,7 @@ class SubAgentFormController extends GetxController {
   final emailController = TextEditingController();
   final mobileController = TextEditingController();
   final passwordController = TextEditingController();
+  final nickNameController = TextEditingController();
 
   final isLoading = false.obs;
 
@@ -22,8 +23,12 @@ class SubAgentFormController extends GetxController {
     if (fullNameController.text.isEmpty ||
         emailController.text.isEmpty ||
         mobileController.text.isEmpty ||
-        passwordController.text.isEmpty) {
-      Get.snackbar('Error', 'All fields are required');
+        passwordController.text.isEmpty ||
+        nickNameController.text.isEmpty) {
+      SnackbarUtil.showErrorSnackbar(
+        title: 'Error',
+        message: 'All fields are required',
+      );
       return;
     }
 
@@ -31,6 +36,7 @@ class SubAgentFormController extends GetxController {
 
     try {
       final result = await _usersRepository.createSubAgent(
+        nickName: nickNameController.text.trim(),
         fullname: fullNameController.text.trim(),
         email: emailController.text.trim(),
         mobile: mobileController.text.trim(),
@@ -65,6 +71,7 @@ class SubAgentFormController extends GetxController {
     fullNameController.clear();
     emailController.clear();
     mobileController.clear();
+    nickNameController.clear();
     passwordController.clear();
   }
 }

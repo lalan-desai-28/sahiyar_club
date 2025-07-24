@@ -6,6 +6,7 @@ import 'package:sahiyar_club/models/pass.dart';
 import 'package:sahiyar_club/models/pass_full.dart';
 import 'package:sahiyar_club/pages/update_pass_page.dart';
 import 'package:sahiyar_club/repositories/pass_repository.dart';
+import 'package:sahiyar_club/statics/app_statics.dart';
 import 'package:sahiyar_club/utils/snackbar_util.dart';
 
 class PassCard extends StatefulWidget {
@@ -285,6 +286,16 @@ class _PassCardState extends State<PassCard> {
                   fontWeight: FontWeight.w500,
                 ),
               ),
+              if (AppStatics.currentUser!.role == "agent") ...[
+                Text(
+                  ' (${_currentPass.requestedBy?.nickName ?? 'Unknown Agent'})',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ],
           ),
           const SizedBox(height: 4),

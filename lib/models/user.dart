@@ -83,4 +83,7 @@ class User {
       'token': token,
     };
   }
+
+  @override
+  String toString() => fullName ?? '';
 }

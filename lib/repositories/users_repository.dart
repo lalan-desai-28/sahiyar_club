@@ -75,6 +75,7 @@ class UsersRepository {
     required String mobile,
     required String password,
     required String parentAgentId,
+    required String nickName,
   }) async {
     final response = await dioClient.post(
       '/users/create',
@@ -86,6 +87,7 @@ class UsersRepository {
         'gender': 'male',
         'role': 'subagent',
         'parentAgentId': parentAgentId,
+        'nickName': nickName,
       },
     );
     return Response<User?>(

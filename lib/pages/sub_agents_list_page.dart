@@ -37,12 +37,6 @@ class _SubAgentsListPageState extends State<SubAgentsListPage> {
             child: Text(subAgent.fullName?.substring(0, 1) ?? '?'),
           ),
           subtitle: Text(subAgent.agentCode ?? 'No Agent Code'),
-          trailing: IconButton(
-            icon: const Icon(Icons.arrow_forward_ios),
-            onPressed: () {
-              // show dashboard of sub agent
-            },
-          ),
         );
       },
       itemCount: controller.subAgents.length,

@@ -22,19 +22,11 @@ class PassListController extends GetxController {
     scrollController.addListener(_onScroll);
   }
 
-  @override
-  void onClose() {
-    scrollController.dispose();
-    super.onClose();
-  }
-
   void _onScroll() {
     if (_shouldLoadMore()) {
       _loadMorePasses();
     }
   }
-
-  
 
   bool _shouldLoadMore() {
     return scrollController.position.pixels >=
@@ -57,6 +49,7 @@ class PassListController extends GetxController {
         limit: _pageSize,
         status: null,
         gender: null,
+        subAgentId: null,
       );
 
       if (response.statusCode == 200) {
@@ -84,6 +77,7 @@ class PassListController extends GetxController {
         limit: _pageSize,
         status: null,
         gender: null,
+        subAgentId: null,
       );
 
       if (response.statusCode == 200) {

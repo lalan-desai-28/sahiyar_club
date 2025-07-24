@@ -204,6 +204,7 @@ class PassRepository {
     required int? limit,
     required String? status,
     required String? gender,
+    required String? subAgentId,
   }) async {
     final response = await dioClient.get(
       '/passes/my',
@@ -212,6 +213,7 @@ class PassRepository {
         'limit': limit ?? 5,
         if (status != null) 'passStatus': status,
         if (gender != null) 'gender': gender.toLowerCase(),
+        if (subAgentId != null) 'subAgentId': subAgentId,
       },
     );
 

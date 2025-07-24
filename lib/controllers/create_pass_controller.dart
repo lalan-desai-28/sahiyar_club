@@ -10,104 +10,321 @@ import 'package:sahiyar_club/utils/image_utils.dart';
 import 'package:sahiyar_club/utils/snackbar_util.dart';
 
 class CreatePassController extends GetxController {
-  final PassRepository passRepository = PassRepository();
+  // Dependencies
+  final PassRepository _passRepository = PassRepository();
+  static final ImagePicker _imagePicker = ImagePicker();
+  static final DateFormat _dateFormatter = DateFormat('yyyy-MM-dd');
 
-  Rx<File?> profileImage = Rx<File?>(null);
+  // Form Controllers
   final TextEditingController fullNameController = TextEditingController();
-
   final TextEditingController mobileController = TextEditingController();
+
+  // Reactive Variables
+  final Rx<File?> profileImage = Rx<File?>(null);
+  final Rx<File?> idProofImage = Rx<File?>(null);
   final Rx<DateTime> selectedDate =
       DateTime.now().subtract(const Duration(days: 365 * 13)).obs;
-  final RxInt uploadProgress = 0.obs;
   final RxString gender = 'Male'.obs;
-  final Rx<File?> idProofImage = Rx<File?>(null);
   final RxBool isPaymentDone = true.obs;
   final RxBool isLoading = false.obs;
+  final RxInt uploadProgress = 0.obs;
 
+  // Constants for validation
+  static const int _minNameLength = 3;
+  static const int _mobileLength = 10;
+
+  // Precompiled regex patterns for better performance
+  static final RegExp _mobileFormatRegex = RegExp(r'^\d{10}$');
+  static final RegExp _mobileStartRegex = RegExp(r'^[9876]');
+  static final List<RegExp> _repeatingDigitRegexes = List.generate(
+    10,
+    (i) => RegExp('$i{7,}'),
+  );
+
+  @override
+  void onClose() {
+    fullNameController.dispose();
+    mobileController.dispose();
+    super.onClose();
+  }
+
+  // Optimized mobile number validation
   bool _validateMobileNumber(String number) {
-    // Must be exactly 10 digits
-    if (!RegExp(r'^\d{10}$').hasMatch(number)) return false;
+    // Basic format check
+    if (!_mobileFormatRegex.hasMatch(number)) return false;
+    if (!_mobileStartRegex.hasMatch(number)) return false;
 
-    // Must start with 9, 8, 7, or 6
-    if (!RegExp(r'^[9876]').hasMatch(number)) return false;
-
-    // Check for any digit repeating more than 6 times (7 or more is invalid)
-    for (int i = 0; i <= 9; i++) {
-      if (RegExp('$i{7,}').hasMatch(number)) return false;
+    // Check for excessive digit repetition
+    for (final regex in _repeatingDigitRegexes) {
+      if (regex.hasMatch(number)) return false;
     }
 
-    // Check for repeated patterns of 4 or more pairs
-    // (3 pairs like "808080" is allowed, but 4 pairs like "80808080" is not)
-    for (int size = 2; size <= 4; size++) {
-      for (int i = 0; i <= number.length - size * 4; i++) {
-        final pattern = number.substring(i, i + size);
-        final repeatedPattern =
-            pattern * 4; // Check if pattern repeats 4+ times
-        if (number.contains(repeatedPattern)) return false;
+    // Check for repeated patterns
+    return !_hasExcessivePatternRepetition(number);
+  }
+
+  bool _hasExcessivePatternRepetition(String number) {
+    for (int patternSize = 2; patternSize <= 4; patternSize++) {
+      for (int i = 0; i <= number.length - patternSize * 4; i++) {
+        final pattern = number.substring(i, i + patternSize);
+        final repeatedPattern = pattern * 4;
+        if (number.contains(repeatedPattern)) return true;
       }
+    }
+    return false;
+  }
+
+  // Optimized form validation
+  bool isFormValid() {
+    final validations = [
+      _validateFullName,
+      _validateMobile,
+      _validateProfileImage,
+      _validateIdProofImage,
+    ];
+
+    for (final validation in validations) {
+      if (!validation()) return false;
     }
 
     return true;
   }
 
+  bool _validateFullName() {
+    final name = fullNameController.text.trim();
+
+    if (name.isEmpty) {
+      _showValidationError('Invalid Name', 'Full name cannot be empty!');
+      return false;
+    }
+
+    if (name.length < _minNameLength) {
+      _showValidationError(
+        'Invalid Name',
+        'Full name must be at least $_minNameLength characters long!',
+      );
+      return false;
+    }
+
+    final names = name.split(' ');
+    if (names.length < 2 || names[0].toLowerCase() == names[1].toLowerCase()) {
+      _showValidationError(
+        'Invalid Name',
+        'Please enter a valid full name! It should contain both first and last names.',
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+  bool _validateMobile() {
+    final mobile = mobileController.text;
+
+    if (mobile.isEmpty || mobile.length != _mobileLength) {
+      _showValidationError(
+        'Invalid Mobile Number',
+        'Please enter a valid mobile number!',
+      );
+      return false;
+    }
+
+    if (!_validateMobileNumber(mobile)) {
+      _showValidationError(
+        'Invalid Mobile Number',
+        'Please enter a valid mobile number!',
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+  bool _validateProfileImage() {
+    if (profileImage.value == null) {
+      _showValidationError(
+        'Profile Image Required',
+        'Please upload a profile image!',
+      );
+      return false;
+    }
+    return true;
+  }
+
+  bool _validateIdProofImage() {
+    if (idProofImage.value == null) {
+      _showValidationError(
+        'ID Proof Required',
+        'Please upload an ID proof image!',
+      );
+      return false;
+    }
+    return true;
+  }
+
+  void _showValidationError(String title, String message) {
+    SnackbarUtil.showErrorSnackbar(title: title, message: message);
+  }
+
+  // Optimized image picker with caching
   Future<String?> _showImagePickerOptions(BuildContext context) async {
-    return await showModalBottomSheet<String>(
+    return showModalBottomSheet<String>(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Select Image Source',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildImageSourceOption(
-                    icon: Icons.camera_alt,
-                    label: 'Camera',
-                    onTap: () {
-                      Navigator.of(context).pop('camera'); // <-- FIX
-                    },
-                  ),
-                  _buildImageSourceOption(
-                    icon: Icons.photo_library,
-                    label: 'Gallery',
-                    onTap: () {
-                      Navigator.of(context).pop('gallery'); // <-- FIX
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-            ],
-          ),
-        );
-      },
+      builder: (context) => _ImagePickerBottomSheet(),
     );
   }
 
-  Widget _buildImageSourceOption({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
+  Future<void> selectIdProofImage() async {
+    final source = await _showImagePickerOptions(Get.context!);
+    if (source == null) return;
+
+    try {
+      final pickedFile = await _imagePicker.pickImage(
+        source: source == 'camera' ? ImageSource.camera : ImageSource.gallery,
+      );
+
+      if (pickedFile == null) {
+        _showImageSelectionError();
+        return;
+      }
+
+      final croppedFile = await ImageUtils.cropImage(
+        imageFile: File(pickedFile.path),
+        cropType: CropType.idProof,
+      );
+
+      if (croppedFile != null) {
+        idProofImage.value = File(croppedFile.path);
+      } else {
+        _showImageSelectionError();
+      }
+    } catch (e) {
+      _showValidationError('Error', 'Failed to select image: $e');
+    }
+  }
+
+  void _showImageSelectionError() {
+    _showValidationError('Image Selection Cancelled', 'No image was selected.');
+  }
+
+  void resetForm() {
+    fullNameController.clear();
+    mobileController.clear();
+    selectedDate.value = DateTime.now().subtract(
+      const Duration(days: 365 * 13),
+    );
+    profileImage.value = null;
+    idProofImage.value = null;
+    gender.value = "Male";
+
+    // Hide keyboard efficiently
+    final context = Get.context;
+    if (context != null) {
+      FocusScope.of(context).unfocus();
+      SystemChannels.textInput.invokeMethod('TextInput.hide');
+    }
+  }
+
+  Future<void> submitForm() async {
+    if (isLoading.value || !isFormValid()) return;
+
+    isLoading.value = true;
+
+    try {
+      final response = await _passRepository.createPass(
+        fullname: fullNameController.text.trim(),
+        dob: _dateFormatter.format(selectedDate.value),
+        mobile: mobileController.text.trim(),
+        gender: gender.value.toLowerCase(),
+        status: isPaymentDone.value ? 'Pending' : 'InRequest',
+        profilePhoto: File(profileImage.value!.path),
+        idProof: File(idProofImage.value!.path),
+      );
+
+      if (response.statusCode == 201) {
+        final newPassCode = response.data?.passCode ?? 'Pass';
+        resetForm();
+        SnackbarUtil.showSuccessSnackbar(
+          title: '$newPassCode created!',
+          message: 'Pass created successfully!',
+        );
+      } else {
+        _showValidationError(
+          'Creation Failed',
+          'Failed to create pass: ${response.statusMessage}',
+        );
+      }
+    } catch (e) {
+      _showValidationError(
+        'Error',
+        'An error occurred while creating the pass: $e',
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+}
+
+class _ImagePickerBottomSheet extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'Select Image Source',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _ImageSourceOption(
+                icon: Icons.camera_alt,
+                label: 'Camera',
+                onTap: () => Navigator.of(context).pop('camera'),
+              ),
+              _ImageSourceOption(
+                icon: Icons.photo_library,
+                label: 'Gallery',
+                onTap: () => Navigator.of(context).pop('gallery'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+        ],
+      ),
+    );
+  }
+}
+
+class _ImageSourceOption extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _ImageSourceOption({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -131,156 +348,5 @@ class CreatePassController extends GetxController {
         ),
       ),
     );
-  }
-
-  bool isFormValid() {
-    if (fullNameController.text.isEmpty) {
-      SnackbarUtil.showErrorSnackbar(
-        title: 'Invalid Name',
-        message: 'Full name cannot be empty!',
-      );
-      return false;
-    }
-
-    if (fullNameController.text.length < 3) {
-      SnackbarUtil.showErrorSnackbar(
-        title: 'Invalid Name',
-        message: 'Full name must be at least 3 characters long!',
-      );
-      return false;
-    }
-
-    // check if first name and last name are not the same and are proper like
-    // firstname{space}lastname
-    final names = fullNameController.text.trim().split(' ');
-    if (names.length < 2 || names[0].toLowerCase() == names[1].toLowerCase()) {
-      SnackbarUtil.showErrorSnackbar(
-        title: 'Invalid Name',
-        message:
-            'Please enter a valid full name! It should contain both first and last names.',
-      );
-      return false;
-    }
-
-    if (mobileController.text.isEmpty || mobileController.text.length != 10) {
-      SnackbarUtil.showErrorSnackbar(
-        title: 'Invalid Mobile Number',
-        message: 'Please enter a valid mobile number!',
-      );
-      return false;
-    }
-
-    if (!_validateMobileNumber(mobileController.text)) {
-      SnackbarUtil.showErrorSnackbar(
-        title: 'Invalid Mobile Number',
-        message: 'Please enter a valid mobile number!',
-      );
-      return false;
-    }
-
-    if (profileImage.value == null) {
-      SnackbarUtil.showErrorSnackbar(
-        title: 'Profile Image Required',
-        message: 'Please upload a profile image!',
-      );
-      return false;
-    }
-
-    if (idProofImage.value == null) {
-      SnackbarUtil.showErrorSnackbar(
-        title: 'ID Proof Required',
-        message: 'Please upload an ID proof image!',
-      );
-      return false;
-    }
-
-    return true;
-  }
-
-  void resetForm() {
-    fullNameController.clear();
-    mobileController.clear();
-    selectedDate.value = DateTime.now().subtract(
-      const Duration(days: 365 * 13),
-    );
-    profileImage.value = null;
-    idProofImage.value = null;
-    gender.value = "Male";
-    FocusScope.of(Get.context!).unfocus();
-    SystemChannels.textInput.invokeMethod('TextInput.hide');
-  }
-
-  void submitForm() async {
-    if (isLoading.value) return;
-    if (!isFormValid()) return;
-
-    isLoading.value = true;
-
-    try {
-      final response = await passRepository.createPass(
-        fullname: fullNameController.text.trim(),
-        dob: DateFormat('yyyy-MM-dd').format(selectedDate.value),
-        mobile: mobileController.text.trim(),
-        gender: gender.value.toLowerCase(),
-        status: isPaymentDone.value ? 'Pending' : 'InRequest',
-        profilePhoto: File(profileImage.value!.path),
-        idProof: File(idProofImage.value!.path),
-      );
-
-      if (response.statusCode == 201) {
-        resetForm();
-        final newPassCode = response.data!.passCode;
-        SnackbarUtil.showSuccessSnackbar(
-          title: '$newPassCode created!',
-          message: 'Pass created successfully!',
-        );
-        // Get.find<HomeController>().changeTab(2);
-      } else {
-        SnackbarUtil.showErrorSnackbar(
-          title: 'Creation Failed',
-          message: 'Failed to create pass: ${response.statusMessage}',
-        );
-      }
-    } catch (e) {
-      SnackbarUtil.showErrorSnackbar(
-        title: 'Error',
-        message: 'An error occurred while creating the pass: $e',
-      );
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  void selectIdProofImage() async {
-    final source = await _showImagePickerOptions(Get.context!);
-    if (source == null) return;
-
-    final picker = ImagePicker();
-    final XFile? pickedFile = await picker.pickImage(
-      source: source == 'camera' ? ImageSource.camera : ImageSource.gallery,
-    );
-
-    // passs it to image cropper
-    if (pickedFile == null) {
-      SnackbarUtil.showErrorSnackbar(
-        title: 'Image Selection Cancelled',
-        message: 'No image was selected.',
-      );
-      return;
-    }
-
-    final croppedFile = await ImageUtils.cropImage(
-      imageFile: File(pickedFile.path),
-      cropType: CropType.idProof,
-    );
-
-    if (croppedFile != null) {
-      idProofImage.value = File(croppedFile.path);
-    } else {
-      SnackbarUtil.showErrorSnackbar(
-        title: 'Image Selection Cancelled',
-        message: 'No image was selected.',
-      );
-    }
   }
 }

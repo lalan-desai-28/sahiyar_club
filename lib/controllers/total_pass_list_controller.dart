@@ -2,17 +2,22 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sahiyar_club/models/pass_full.dart';
+import 'package:sahiyar_club/models/user.dart';
 import 'package:sahiyar_club/repositories/pass_repository.dart';
+import 'package:sahiyar_club/repositories/users_repository.dart';
 import 'package:sahiyar_club/utils/snackbar_util.dart';
 
 class TotalPassListController extends GetxController {
   final PassRepository _passRepository = PassRepository();
+  final UsersRepository _usersRepository = UsersRepository();
   final ScrollController scrollController = ScrollController();
 
   final passes = <FullPass>[].obs;
+  final subAgents = <User>[].obs;
   final isLoading = false.obs;
   final isLoadingMore = false.obs;
   final hasMoreData = true.obs;
+  final selectedSubAgent = Rxn<User>();
 
   final selectedStatus = Rxn<String>();
   final selectedGender = Rxn<String>();
@@ -29,7 +34,12 @@ class TotalPassListController extends GetxController {
     'RejectedForQuery',
   ];
 
-
+  void getSubAgents() async {
+    isLoading.value = true;
+    final subagents = await _usersRepository.getSubAgents();
+    subAgents.assignAll(subagents.data ?? []);
+    isLoading.value = false;
+  }
 
   @override
   void onInit() {
@@ -44,6 +54,7 @@ class TotalPassListController extends GetxController {
     }
 
     fetchPasses();
+    getSubAgents();
   }
 
   @override
@@ -79,6 +90,7 @@ class TotalPassListController extends GetxController {
         limit: _pageSize,
         status: selectedStatus.value,
         gender: selectedGender.value,
+        subAgentId: selectedSubAgent.value?.id,
       );
 
       if (response.statusCode == 200) {
@@ -106,6 +118,7 @@ class TotalPassListController extends GetxController {
         limit: _pageSize,
         status: selectedStatus.value,
         gender: selectedGender.value,
+        subAgentId: selectedSubAgent.value?.id,
       );
 
       if (response.statusCode == 200) {
@@ -137,6 +150,7 @@ class TotalPassListController extends GetxController {
   void clearFilters() {
     selectedStatus.value = null;
     selectedGender.value = null;
+    selectedSubAgent.value = null;
     fetchPasses();
   }
 

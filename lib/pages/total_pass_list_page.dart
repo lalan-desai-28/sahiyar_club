@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sahiyar_club/controllers/total_pass_list_controller.dart';
+import 'package:sahiyar_club/models/user.dart';
 import 'package:sahiyar_club/statics/app_statics.dart';
 import 'package:sahiyar_club/widgets/custom_dropdown.dart';
 import 'package:sahiyar_club/widgets/pass_card.dart';
@@ -333,6 +334,21 @@ class _FilterBottomSheet extends StatelessWidget {
             itemToString: (item) => item,
           ),
         ),
+        const SizedBox(height: 16),
+
+        if (AppStatics.currentUser!.role == "agent") ...[
+          Obx(
+            () => CustomDropdown<User>(
+              label: 'Sub agent',
+              items: controller.subAgents,
+              selectedValue: controller.selectedSubAgent.value,
+              onChanged: (value) {
+                controller.selectedSubAgent.value = value;
+              },
+              itemToString: (item) => item.toString(),
+            ),
+          ),
+        ],
       ],
     );
   }
