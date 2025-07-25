@@ -15,6 +15,7 @@ class OtpPage extends StatelessWidget {
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: _buildAppBar(context),
       body: SingleChildScrollView(
+        reverse: true,
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [

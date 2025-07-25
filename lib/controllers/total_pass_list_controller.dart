@@ -166,6 +166,9 @@ class TotalPassListController extends GetxController {
     if (selectedGender.value != null) {
       activeFilters.add('Gender: ${selectedGender.value}');
     }
+    if (selectedSubAgent.value != null) {
+      activeFilters.add('Sub Agent: ${selectedSubAgent.value?.nickName}');
+    }
     return activeFilters.isEmpty ? 'All Passes' : activeFilters.join(' • ');
   }
 }

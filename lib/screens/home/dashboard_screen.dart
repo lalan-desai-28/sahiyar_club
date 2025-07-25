@@ -199,7 +199,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   2500, // MRP
                   Icons.male,
                   const Color(0xFF60A5FA),
-                  feeBatch.shouldShowMRP ?? false,
+                  feeBatch.showDiscountedPrice ?? false,
                 ),
               ),
               const SizedBox(width: 12),
@@ -210,7 +210,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   2500, // MRP
                   Icons.female,
                   const Color(0xFFF472B6),
-                  feeBatch.shouldShowMRP ?? false,
+                  feeBatch.showDiscountedPrice ?? false,
                 ),
               ),
               const SizedBox(width: 12),
@@ -221,7 +221,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   1700, // MRP
                   Icons.child_care,
                   const Color(0xFFFBBF24),
-                  feeBatch.shouldShowMRP ?? false,
+                  feeBatch.showDiscountedPrice ?? false,
                 ),
               ),
             ],

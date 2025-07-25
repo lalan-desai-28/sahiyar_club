@@ -31,12 +31,46 @@ class _SubAgentsListPageState extends State<SubAgentsListPage> {
     return ListView.builder(
       itemBuilder: (context, index) {
         final subAgent = controller.subAgents[index];
-        return ListTile(
-          title: Text(subAgent.fullName ?? '---'),
-          leading: CircleAvatar(
-            child: Text(subAgent.fullName?.substring(0, 1) ?? '?'),
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+          child: ListTile(
+            title: Text(subAgent.fullName ?? '---'),
+            leading: CircleAvatar(
+              child: Text(subAgent.fullName?.substring(0, 1) ?? 'N/A'),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.numbers, size: 16),
+                    SizedBox(width: 5),
+                    Text(subAgent.agentCode ?? 'No Agent Code'),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Icon(Icons.phone, size: 16),
+                    SizedBox(width: 5),
+                    Text(subAgent.mobile ?? 'No Mobile'),
+                  ],
+                ),
+              ],
+            ),
+
+            trailing: IconButton(
+              icon: const Icon(Icons.arrow_forward),
+              onPressed: () {
+                Get.toNamed(
+                  AppRoutes.SUB_AGENT_DETAIL_PAGE,
+                  arguments: subAgent,
+                );
+              },
+            ),
+            onTap: () {
+              Get.toNamed(AppRoutes.SUB_AGENT_DETAIL_PAGE, arguments: subAgent);
+            },
           ),
-          subtitle: Text(subAgent.agentCode ?? 'No Agent Code'),
         );
       },
       itemCount: controller.subAgents.length,

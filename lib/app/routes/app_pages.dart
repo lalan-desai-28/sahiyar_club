@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:sahiyar_club/app/bindings/sub_agent_detail_page_bindings.dart';
 import 'package:sahiyar_club/app/bindings/subagent_form_binding.dart';
 import 'package:sahiyar_club/app/bindings/home_bindings.dart';
 import 'package:sahiyar_club/app/bindings/login_binding.dart';
@@ -14,6 +15,7 @@ import 'package:sahiyar_club/pages/otp_page.dart';
 
 import 'package:sahiyar_club/pages/pass_list_page.dart';
 import 'package:sahiyar_club/pages/splash_page.dart';
+import 'package:sahiyar_club/pages/sub_agent_detail_page.dart';
 import 'package:sahiyar_club/pages/sub_agent_form_page.dart';
 import 'package:sahiyar_club/pages/sub_agents_list_page.dart';
 import 'package:sahiyar_club/pages/total_pass_list_page.dart';
@@ -88,6 +90,15 @@ class AppPages {
           () =>
               const SubAgentFormPage(), // Placeholder, replace with actual form page
       binding: SubagentFormBinding(),
+      transition: Transition.rightToLeft,
+    ),
+
+    GetPage(
+      name: AppRoutes.SUB_AGENT_DETAIL_PAGE,
+      page:
+          () =>
+              const SubAgentDetailPage(), // Placeholder, replace with actual detail page
+      binding: SubAgentDetailPageBindings(),
       transition: Transition.rightToLeft,
     ),
   ];

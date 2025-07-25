@@ -8,8 +8,11 @@ class HomeRepository {
 
   /// Fetches user's pass statistics
   /// Endpoint: GET /api/passes/myStats
-  Future<Response<Stat>> getMyStats() async {
-    final response = await dioClient.get('/passes/myStats');
+  Future<Response<Stat>> getMyStats({String? subAgentId}) async {
+    final response = await dioClient.get(
+      '/passes/myStats',
+      queryParameters: {if (subAgentId != null) 'subAgentId': subAgentId},
+    );
 
     return Response<Stat>(
       data: Stat.fromJson(response.data),

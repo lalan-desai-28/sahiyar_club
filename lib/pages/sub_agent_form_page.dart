@@ -19,6 +19,7 @@ class _SubAgentFormPageState extends State<SubAgentFormPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('Create Sub Agent')),
       body: SingleChildScrollView(
+        reverse: true,
         padding: const EdgeInsets.all(16.0),
         child: Column(
           spacing: 10.0,

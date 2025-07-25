@@ -10,7 +10,11 @@ class Stat {
   int? totalMalePasses;
   int? totalFemalePasses;
   int? totalKidPasses;
+  int? totalMaleCollectedFees;
+  int? totalFemaleCollectedFees;
+  int? totalKidCollectedFees;
   CurrentFeeBatch? currentFeeBatch;
+  List<SubAgentStats>? subAgentStats;
 
   Stat({
     this.totalPasses,
@@ -24,7 +28,11 @@ class Stat {
     this.totalMalePasses,
     this.totalFemalePasses,
     this.totalKidPasses,
+    this.totalMaleCollectedFees,
+    this.totalFemaleCollectedFees,
+    this.totalKidCollectedFees,
     this.currentFeeBatch,
+    this.subAgentStats,
   });
 
   Stat.fromJson(Map<String, dynamic> json) {
@@ -39,10 +47,19 @@ class Stat {
     totalMalePasses = json['totalMalePasses'];
     totalFemalePasses = json['totalFemalePasses'];
     totalKidPasses = json['totalKidPasses'];
+    totalMaleCollectedFees = json['totalMaleCollectedFees'];
+    totalFemaleCollectedFees = json['totalFemaleCollectedFees'];
+    totalKidCollectedFees = json['totalKidCollectedFees'];
     currentFeeBatch =
         json['currentFeeBatch'] != null
             ? CurrentFeeBatch.fromJson(json['currentFeeBatch'])
             : null;
+    if (json['subAgentStats'] != null) {
+      subAgentStats = <SubAgentStats>[];
+      json['subAgentStats'].forEach((v) {
+        subAgentStats!.add(SubAgentStats.fromJson(v));
+      });
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -58,8 +75,14 @@ class Stat {
     data['totalMalePasses'] = totalMalePasses;
     data['totalFemalePasses'] = totalFemalePasses;
     data['totalKidPasses'] = totalKidPasses;
+    data['totalMaleCollectedFees'] = totalMaleCollectedFees;
+    data['totalFemaleCollectedFees'] = totalFemaleCollectedFees;
+    data['totalKidCollectedFees'] = totalKidCollectedFees;
     if (currentFeeBatch != null) {
       data['currentFeeBatch'] = currentFeeBatch!.toJson();
+    }
+    if (subAgentStats != null) {
+      data['subAgentStats'] = subAgentStats!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -71,7 +94,7 @@ class CurrentFeeBatch {
   int? maleFee;
   int? femaleFee;
   int? kidFee;
-  bool? shouldShowMRP;
+  bool? showDiscountedPrice;
 
   CurrentFeeBatch({
     this.batchType,
@@ -79,7 +102,7 @@ class CurrentFeeBatch {
     this.maleFee,
     this.femaleFee,
     this.kidFee,
-    this.shouldShowMRP = false,
+    this.showDiscountedPrice,
   });
 
   CurrentFeeBatch.fromJson(Map<String, dynamic> json) {
@@ -88,7 +111,7 @@ class CurrentFeeBatch {
     maleFee = json['maleFee'];
     femaleFee = json['femaleFee'];
     kidFee = json['kidFee'];
-    shouldShowMRP = json['showDiscountedPrice'] ?? false;
+    showDiscountedPrice = json['showDiscountedPrice'];
   }
 
   Map<String, dynamic> toJson() {
@@ -98,6 +121,29 @@ class CurrentFeeBatch {
     data['maleFee'] = maleFee;
     data['femaleFee'] = femaleFee;
     data['kidFee'] = kidFee;
+    data['showDiscountedPrice'] = showDiscountedPrice;
+    return data;
+  }
+}
+
+class SubAgentStats {
+  String? subAgentId;
+  String? subAgentCode;
+  int? passCount;
+
+  SubAgentStats({this.subAgentId, this.subAgentCode, this.passCount});
+
+  SubAgentStats.fromJson(Map<String, dynamic> json) {
+    subAgentId = json['subAgentId'];
+    subAgentCode = json['subAgentCode'];
+    passCount = json['passCount'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['subAgentId'] = subAgentId;
+    data['subAgentCode'] = subAgentCode;
+    data['passCount'] = passCount;
     return data;
   }
 }

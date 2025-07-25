@@ -286,7 +286,8 @@ class _PassCardState extends State<PassCard> {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              if (AppStatics.currentUser!.role == "agent") ...[
+              if (AppStatics.currentUser!.role == "agent" &&
+                  _currentPass.requestedBy?.nickName != null) ...[
                 Text(
                   ' (${_currentPass.requestedBy?.nickName ?? 'Unknown Agent'})',
                   style: TextStyle(
@@ -354,7 +355,10 @@ class _PassCardState extends State<PassCard> {
 
     // Only show switch when status is "inrequest" or "pending"
     final status = _currentPass.status?.toLowerCase().trim();
-    if (status == 'inrequest' || status == 'pending') {
+    final ifSubagentThenHideToggle =
+        _currentPass.requestedBy?.role == 'subagent';
+    if (status == 'inrequest' ||
+        (status == 'pending' && !ifSubagentThenHideToggle)) {
       return _buildStatusToggle();
     }
 
