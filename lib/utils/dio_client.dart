@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:get/get.dart' hide Response, FormData;
 import 'package:sahiyar_club/constants/api_config_constants.dart';
 import 'package:sahiyar_club/utils/hive_database.dart';
+import 'package:sahiyar_club/utils/snackbar_util.dart';
 
 /// A Dio-based implementation of the [ApiClient] interface.
 class DioClient {
@@ -152,6 +153,19 @@ class DioClient {
     final statusCode = error.response?.statusCode;
     if (statusCode == 401) {
       HiveDatabase().removeToken();
+      // check if current route is not login
+      if (Get.currentRoute != '/login') {
+        Get.offAllNamed('/login'); // Navigate to login page on 401
+      }
+    }
+    if (statusCode == 403) {
+      // Handle forbidden access
+      SnackbarUtil.showErrorSnackbar(
+        title: 'Access Denied',
+        message: "Your account is deactivated. Please contact support.",
+      );
+      HiveDatabase().removeToken();
+      // remove token
       // check if current route is not login
       if (Get.currentRoute != '/login') {
         Get.offAllNamed('/login'); // Navigate to login page on 401

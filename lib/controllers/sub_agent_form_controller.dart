@@ -54,13 +54,15 @@ class SubAgentFormController extends GetxController {
       } else {
         SnackbarUtil.showErrorSnackbar(
           title: 'Error',
-          message: 'Failed to create Sub Agent: ${result.statusMessage}',
+          message:
+              'Failed to create Sub Agent: Either this mobile number or email is already in use.',
         );
       }
     } on Exception catch (e) {
       SnackbarUtil.showErrorSnackbar(
         title: 'Error',
-        message: 'Failed to create Sub Agent: ${e.toString()}',
+        message:
+            'Failed to create Sub Agent: Either this mobile number or email is already in use.',
       );
     }
 
