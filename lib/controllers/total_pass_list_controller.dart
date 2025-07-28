@@ -5,6 +5,7 @@ import 'package:sahiyar_club/models/pass_full.dart';
 import 'package:sahiyar_club/models/user.dart';
 import 'package:sahiyar_club/repositories/pass_repository.dart';
 import 'package:sahiyar_club/repositories/users_repository.dart';
+import 'package:sahiyar_club/statics/app_statics.dart';
 import 'package:sahiyar_club/utils/snackbar_util.dart';
 
 class TotalPassListController extends GetxController {
@@ -54,7 +55,9 @@ class TotalPassListController extends GetxController {
     }
 
     fetchPasses();
-    getSubAgents();
+    if (AppStatics.currentUser?.role == "agent") {
+      getSubAgents();
+    }
   }
 
   @override

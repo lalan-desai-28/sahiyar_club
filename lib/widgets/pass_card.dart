@@ -287,6 +287,7 @@ class _PassCardState extends State<PassCard> {
                 ),
               ),
               if (AppStatics.currentUser!.role == "agent" &&
+                  _currentPass.requestedBy?.role == "subagent" &&
                   _currentPass.requestedBy?.nickName != null) ...[
                 Text(
                   ' (${_currentPass.requestedBy?.nickName ?? 'Unknown Agent'})',
