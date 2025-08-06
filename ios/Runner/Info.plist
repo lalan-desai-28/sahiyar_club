@@ -17,6 +17,9 @@
 			<true />
 		</dict>
 
+		<key>NSFaceIDUsageDescription</key>
+		<string>App using biometric authentication for secure login.</string>
+
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>

@@ -2,6 +2,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:sahiyar_club/app/routes/app_routes.dart';
+import 'package:sahiyar_club/models/user.dart';
 import 'package:sahiyar_club/repositories/users_repository.dart';
 import 'package:sahiyar_club/statics/app_statics.dart';
 import 'package:sahiyar_club/utils/hive_database.dart';
@@ -48,9 +50,10 @@ class OtpController extends GetxController {
   }
 
   void _saveUserAndNavigate(dynamic userData) {
-    Get.find<HiveDatabase>().saveToken(userData?.token ?? '');
+    final hiveDatabase = Get.find<HiveDatabase>();
+    hiveDatabase.saveToken(userData?.token ?? '');
     AppStatics.currentUser = userData;
-    Get.offAllNamed('/home');
+    Get.offAllNamed(AppRoutes.AUTHENTICATION, arguments: userData as User);
   }
 
   void _showError(String message) {

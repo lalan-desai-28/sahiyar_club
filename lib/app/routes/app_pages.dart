@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:sahiyar_club/app/bindings/authentication_bindings.dart';
 import 'package:sahiyar_club/app/bindings/sub_agent_detail_page_bindings.dart';
 import 'package:sahiyar_club/app/bindings/subagent_form_binding.dart';
 import 'package:sahiyar_club/app/bindings/home_bindings.dart';
@@ -9,6 +10,7 @@ import 'package:sahiyar_club/app/bindings/splash_bindings.dart';
 import 'package:sahiyar_club/app/bindings/sub_agents_list_binding.dart';
 import 'package:sahiyar_club/app/bindings/total_pass_list_bindings.dart';
 import 'package:sahiyar_club/app/routes/app_routes.dart';
+import 'package:sahiyar_club/pages/authentication_page.dart';
 import 'package:sahiyar_club/pages/home_page.dart';
 import 'package:sahiyar_club/pages/login_page.dart';
 import 'package:sahiyar_club/pages/otp_page.dart';
@@ -21,7 +23,7 @@ import 'package:sahiyar_club/pages/sub_agents_list_page.dart';
 import 'package:sahiyar_club/pages/total_pass_list_page.dart';
 
 class AppPages {
-  static const INITIAL = AppRoutes.SPLASH;
+  static const INITIAL = AppRoutes.AUTHENTICATION;
 
   static final routes = [
     // Splash
@@ -100,6 +102,13 @@ class AppPages {
               const SubAgentDetailPage(), // Placeholder, replace with actual detail page
       binding: SubAgentDetailPageBindings(),
       transition: Transition.rightToLeft,
+    ),
+
+    GetPage(
+      name: AppRoutes.AUTHENTICATION,
+      page: () => AuthenticationPage(),
+      transition: Transition.fade,
+      binding: AuthenticationBinding(),
     ),
   ];
 }

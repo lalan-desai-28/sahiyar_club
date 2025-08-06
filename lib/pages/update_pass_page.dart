@@ -225,6 +225,23 @@ class _UpdatePassPageState extends State<UpdatePassPage> {
                         ),
                       ),
                     ),
+                    // Preview Button
+                    if (controller.idProofImage.value != null ||
+                        controller.idProofNetworkImage.value.isNotEmpty) ...[
+                      InkWell(
+                        onTap: () => _showIdProofPreview(),
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          child: Icon(
+                            Icons.visibility,
+                            color: Theme.of(context).colorScheme.primary,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                     Icon(
                       (controller.idProofImage.value != null ||
                               controller.idProofNetworkImage.value.isNotEmpty)
@@ -304,6 +321,142 @@ class _UpdatePassPageState extends State<UpdatePassPage> {
         );
       }
     });
+  }
+
+  void _showIdProofPreview() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Stack(
+            children: [
+              // Background tap to close
+              GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(
+                  color: Colors.transparent,
+                  width: double.infinity,
+                  height: double.infinity,
+                ),
+              ),
+              // Image preview
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Header
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(12),
+                            topRight: Radius.circular(12),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'ID Proof Preview',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onPrimary,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            InkWell(
+                              onTap: () => Navigator.of(context).pop(),
+                              child: Icon(
+                                Icons.close,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                                size: 24,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Image
+                      Container(
+                        constraints: BoxConstraints(
+                          maxHeight: MediaQuery.of(context).size.height * 0.6,
+                          maxWidth: MediaQuery.of(context).size.width * 0.9,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child:
+                                controller.idProofImage.value != null
+                                    ? Image.file(
+                                      controller.idProofImage.value!,
+                                      fit: BoxFit.contain,
+                                    )
+                                    : controller
+                                        .idProofNetworkImage
+                                        .value
+                                        .isNotEmpty
+                                    ? CachedNetworkImage(
+                                      imageUrl:
+                                          controller.idProofNetworkImage.value,
+                                      fit: BoxFit.contain,
+                                      placeholder:
+                                          (context, url) => const Center(
+                                            child: CircularProgressIndicator(),
+                                          ),
+                                      errorWidget:
+                                          (context, url, error) => Center(
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.error,
+                                                  color: Colors.red,
+                                                  size: 48,
+                                                ),
+                                                const SizedBox(height: 8),
+                                                Text(
+                                                  'Failed to load image',
+                                                  style: TextStyle(
+                                                    color: Colors.red,
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                    )
+                                    : const Center(
+                                      child: Text('No image available'),
+                                    ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildDatePicker() {

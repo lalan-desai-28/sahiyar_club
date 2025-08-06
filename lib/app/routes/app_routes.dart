@@ -20,4 +20,6 @@ abstract class AppRoutes {
   static const SUB_AGENT_FORM_PAGE = '/sub-agent-form-page';
 
   static const SUB_AGENT_DETAIL_PAGE = '/sub-agent-detail-page';
+
+  static const AUTHENTICATION = '/authentication';
 }

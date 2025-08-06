@@ -334,9 +334,10 @@ class _FilterBottomSheet extends StatelessWidget {
             itemToString: (item) => item,
           ),
         ),
-        const SizedBox(height: 16),
 
-        if (AppStatics.currentUser!.role == "agent") ...[
+        if (AppStatics.currentUser!.role == "agent" &&
+            controller.subAgents.isNotEmpty) ...[
+          const SizedBox(height: 16),
           Obx(
             () => CustomDropdown<User>(
               label: 'Sub agent',

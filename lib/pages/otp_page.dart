@@ -49,7 +49,6 @@ class OtpPage extends StatelessWidget {
         ),
         onPressed: () => Get.back(),
       ),
-      centerTitle: true,
     );
   }
 
@@ -134,6 +133,9 @@ class OtpPage extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return PinCodeTextField(
+      autoFocus: true,
+
+      backgroundColor: Colors.transparent,
       controller: controller.otpController,
       appContext: context,
       length: 6,

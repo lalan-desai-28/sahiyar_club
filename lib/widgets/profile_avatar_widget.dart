@@ -1,11 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image_cropper/image_cropper.dart';
 import 'package:sahiyar_club/utils/image_utils.dart';
 import 'package:sahiyar_club/utils/snackbar_util.dart';
 
-class ProfileAvatarWidget extends StatefulWidget {
+class ProfileAvatarWidget extends StatelessWidget {
   const ProfileAvatarWidget({
     super.key,
     this.isUploading = false,
@@ -13,6 +12,7 @@ class ProfileAvatarWidget extends StatefulWidget {
     required this.onImageSelected,
     required this.placeholderImage,
     this.progress = 0,
+    this.sid,
   });
 
   final bool isUploading;
@@ -20,12 +20,8 @@ class ProfileAvatarWidget extends StatefulWidget {
   final Image placeholderImage;
   final Function(File?) onImageSelected;
   final int progress;
+  final String? sid;
 
-  @override
-  State<ProfileAvatarWidget> createState() => _ProfileAvatarWidgetState();
-}
-
-class _ProfileAvatarWidgetState extends State<ProfileAvatarWidget> {
   Future<void> _pickImageFromCamera() async {
     try {
       final ImagePicker picker = ImagePicker();
@@ -59,7 +55,7 @@ class _ProfileAvatarWidgetState extends State<ProfileAvatarWidget> {
       );
 
       if (croppedFile != null) {
-        widget.onImageSelected(File(croppedFile.path));
+        onImageSelected(File(croppedFile.path));
       }
     } catch (e) {
       _showErrorSnackBar('Failed to crop image: $e');
@@ -70,7 +66,7 @@ class _ProfileAvatarWidgetState extends State<ProfileAvatarWidget> {
     SnackbarUtil.showErrorSnackbar(title: "Error", message: message);
   }
 
-  Future<void> _showImagePickerOptions() async {
+  Future<void> _showImagePickerOptions(BuildContext context) async {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -161,13 +157,13 @@ class _ProfileAvatarWidgetState extends State<ProfileAvatarWidget> {
       alignment: Alignment.center,
       children: [
         // Loading indicator
-        if (widget.isUploading)
+        if (isUploading)
           Center(
             child: SizedBox(
               width: 152,
               height: 152,
               child: CircularProgressIndicator(
-                value: widget.progress != 0 ? widget.progress / 100 : null,
+                value: progress != 0 ? progress / 100 : null,
                 strokeWidth: 4,
               ),
             ),
@@ -175,7 +171,7 @@ class _ProfileAvatarWidgetState extends State<ProfileAvatarWidget> {
 
         // Avatar container
         InkWell(
-          onTap: widget.isUploading ? null : _showImagePickerOptions,
+          onTap: isUploading ? null : () => _showImagePickerOptions(context),
           child: Container(
             width: 150,
             height: 150,
@@ -191,10 +187,7 @@ class _ProfileAvatarWidgetState extends State<ProfileAvatarWidget> {
                 ),
               ],
               image: DecorationImage(
-                image:
-                    widget.image != null
-                        ? widget.image!.image
-                        : widget.placeholderImage.image,
+                image: image != null ? image!.image : placeholderImage.image,
                 fit: BoxFit.cover,
               ),
             ),

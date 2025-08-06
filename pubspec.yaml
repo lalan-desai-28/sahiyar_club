@@ -49,6 +49,7 @@ dependencies:
   shimmer_animation: ^2.2.2
   connectivity_plus: ^6.1.4
   flutter_image_compress: ^2.4.0
+  local_auth: ^2.3.0
   
 
 

@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:sahiyar_club/app/routes/app_routes.dart';
 import 'package:sahiyar_club/models/user.dart';
 import 'package:sahiyar_club/repositories/users_repository.dart';
 import 'package:sahiyar_club/statics/app_statics.dart';
@@ -34,10 +35,11 @@ class SplashController extends GetxController {
       final user = await getUserFromToken(token);
       if (user != null) {
         AppStatics.currentUser = user; // Set the current user
-        Get.offNamed(
-          '/home',
-          arguments: user,
-        ); // Navigate to home page with user data,
+        Get.offNamed(AppRoutes.AUTHENTICATION, arguments: user);
+        // Get.offNamed(
+        //   '/home',
+        //   arguments: user,
+        // ); // Navigate to home page with user data,
       } else {
         Get.offNamed('/login'); // Navigate to login page if no token
       }

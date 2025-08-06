@@ -200,6 +200,7 @@ class PassRepository {
   }
 
   Future<Response<List<FullPass>>> getMyPasses({
+    String? search,
     required int? page,
     required int? limit,
     required String? status,
@@ -209,6 +210,7 @@ class PassRepository {
     final response = await dioClient.get(
       '/passes/my',
       queryParameters: {
+        if (search != null && search.isNotEmpty) 'search': search,
         'page': page ?? 1,
         'limit': limit ?? 5,
         if (status != null) 'passStatus': status,

@@ -1,96 +1,110 @@
+// lib/pages/pass_list_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sahiyar_club/controllers/pass_list_controller.dart';
 import 'package:sahiyar_club/widgets/pass_card.dart';
 
-class PassListPage extends StatefulWidget {
+class PassListPage extends StatelessWidget {
   const PassListPage({super.key});
 
   @override
-  State<PassListPage> createState() => _PassListPageState();
-}
-
-class _PassListPageState extends State<PassListPage> {
-  final PassListController _controller = PassListController();
-
-  @override
-  void initState() {
-    super.initState();
-    _controller.onInit();
-    _controller.fetchMyPasses();
-  }
-
-  @override
-  void dispose() {
-    _controller.scrollController.dispose();
-    _controller.onClose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(body: Obx(() => _buildBody()));
-  }
+    final c = Get.put(PassListController());
 
-  Widget _buildBody() {
-    if (_controller.isLoading.value) return _buildLoadingState();
-    if (_controller.passes.isEmpty) return _buildEmptyState();
-    return _buildPassList();
-  }
-
-  Widget _buildLoadingState() {
-    return const Center(child: CircularProgressIndicator(color: Colors.amber));
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+    return Scaffold(
+      body: Column(
         children: [
-          Icon(Icons.badge_outlined, size: 80, color: Colors.amber[300]),
-          const SizedBox(height: 16),
-          const Text('No Passes Found', style: TextStyle(fontSize: 20)),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: _controller.fetchMyPasses,
-            child: const Text('Refresh'),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: TextField(
+              controller: c.searchController,
+              decoration: InputDecoration(
+                labelText: 'Search Passes',
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: c.clearSearch,
+                ),
+              ),
+            ),
+          ),
+
+          // ————— List area (only this Obx rebuilds) —————
+          Expanded(
+            child: Obx(() {
+              // Loading spinner on initial load
+              if (c.isLoading.value && c.passes.isEmpty) {
+                return const Center(
+                  child: CircularProgressIndicator(color: Colors.amber),
+                );
+              }
+
+              // Pull-to-refresh + list or empty state
+              return RefreshIndicator(
+                onRefresh: c.refreshPasses,
+                child:
+                    c.passes.isEmpty
+                        // Empty state when there's no data
+                        ? ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: [
+                            const SizedBox(height: 100),
+                            Icon(
+                              Icons.badge_outlined,
+                              size: 80,
+                              color: Colors.amber[300],
+                            ),
+                            const SizedBox(height: 16),
+                            const Center(
+                              child: Text(
+                                'No Passes Found',
+                                style: TextStyle(fontSize: 20),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Center(
+                              child: ElevatedButton(
+                                onPressed: c.refreshPasses,
+                                child: const Text('Refresh'),
+                              ),
+                            ),
+                          ],
+                        )
+                        // Actual scrollable list + load-more indicator
+                        : ListView.builder(
+                          controller: c.scrollController,
+                          physics: const BouncingScrollPhysics(
+                            parent: AlwaysScrollableScrollPhysics(),
+                          ),
+                          cacheExtent: 1500,
+                          itemExtent: 138,
+                          itemCount:
+                              c.passes.length + (c.hasMoreData.value ? 1 : 0),
+                          itemBuilder: (context, index) {
+                            if (index < c.passes.length) {
+                              return PassCard(fullPass: c.passes[index]);
+                            }
+                            // Load-more spinner at the bottom
+                            return Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Center(
+                                child:
+                                    c.isLoadingMore.value
+                                        ? const CircularProgressIndicator(
+                                          color: Colors.amber,
+                                        )
+                                        : const SizedBox.shrink(),
+                              ),
+                            );
+                          },
+                        ),
+              );
+            }),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildPassList() {
-    return RefreshIndicator(
-      onRefresh: _controller.refreshPasses,
-      child: ListView.builder(
-        physics: const BouncingScrollPhysics(
-          parent: AlwaysScrollableScrollPhysics(),
-        ),
-        cacheExtent: 1500,
-        itemExtent: 138,
-        addAutomaticKeepAlives: true, // Keep alive for better performance
-        addRepaintBoundaries: true, // Automatic repaint boundaries
-        addSemanticIndexes: true,
-        controller: _controller.scrollController,
-        itemCount:
-            _controller.passes.length + (_controller.hasMoreData.value ? 1 : 0),
-        itemBuilder: (context, index) {
-          if (index < _controller.passes.length) {
-            return PassCard(fullPass: _controller.passes[index]);
-          }
-          return _buildLoadMoreIndicator();
-        },
-      ),
-    );
-  }
-
-  Widget _buildLoadMoreIndicator() {
-    if (!_controller.isLoadingMore.value) return const SizedBox.shrink();
-
-    return const Padding(
-      padding: EdgeInsets.all(16),
-      child: Center(child: CircularProgressIndicator(color: Colors.amber)),
     );
   }
 }
