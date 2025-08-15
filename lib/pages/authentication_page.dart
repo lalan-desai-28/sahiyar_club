@@ -64,7 +64,7 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
     return Column(
       children: [
         Icon(
-          Icons.fingerprint,
+          Icons.lock,
           size: 80,
           color: Theme.of(context).colorScheme.primary,
         ),

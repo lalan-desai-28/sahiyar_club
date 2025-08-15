@@ -145,16 +145,7 @@ class AuthenticationController extends GetxController {
   }
 
   bool _isValidPin(String pin) {
-    // Check for sequential digits
-    List<int> digits = pin.split('').map(int.parse).toList();
-    for (int i = 0; i < digits.length - 2; i++) {
-      if (digits[i] + 1 == digits[i + 1] &&
-          digits[i + 1] + 1 == digits[i + 2]) {
-        return false;
-      }
-    }
-
-    return true;
+    return pin.length == 4 && RegExp(r'^\d{4}$').hasMatch(pin);
   }
 
   Future<void> _savePin(String pin) async {
