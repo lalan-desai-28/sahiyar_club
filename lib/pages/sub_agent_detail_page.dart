@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:sahiyar_club/app/routes/app_routes.dart';
 import 'package:sahiyar_club/controllers/sub_agent_detail_page_controller.dart';
 import 'package:sahiyar_club/models/user.dart';
 import 'package:sahiyar_club/widgets/animated_counter.dart';
@@ -21,7 +22,10 @@ class _SubAgentDetailPageState extends State<SubAgentDetailPage> {
   @override
   void initState() {
     super.initState();
-    controller.fetchSubAgentDetails(subAgent.id!);
+    // Use WidgetsBinding.instance.addPostFrameCallback to ensure the fetch happens after the build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.fetchSubAgentDetails(subAgent.id!);
+    });
   }
 
   @override
@@ -34,169 +38,304 @@ class _SubAgentDetailPageState extends State<SubAgentDetailPage> {
         title: Text('${subAgent.fullName ?? 'Sub Agent'} Details'),
         backgroundColor: colorScheme.surface,
         foregroundColor: colorScheme.onSurface,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () {
+              // redirect to edit page
+              Get.toNamed(AppRoutes.SUB_AGENT_FORM_PAGE, arguments: subAgent);
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              controller.fetchSubAgentDetails(subAgent.id!);
+            },
+          ),
+        ],
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
           return Center(
-            child: CircularProgressIndicator(color: colorScheme.primary),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(color: colorScheme.primary),
+                const SizedBox(height: 16),
+                Text(
+                  'Loading statistics...',
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: colorScheme.onSurface.withOpacity(0.7),
+                  ),
+                ),
+              ],
+            ),
           );
         }
 
         final stats = controller.stats.value;
         if (stats == null) {
           return Center(
-            child: Text(
-              'No data available',
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: colorScheme.onSurface,
-              ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.analytics_outlined,
+                  size: 64,
+                  color: colorScheme.onSurface.withOpacity(0.5),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'No data available',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    color: colorScheme.onSurface.withOpacity(0.7),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Pull down to refresh',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurface.withOpacity(0.5),
+                  ),
+                ),
+              ],
             ),
           );
         }
 
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Pass Statistics Section
-              _buildSectionCard(
-                title: 'Pass Statistics',
-                colorScheme: colorScheme,
-                theme: theme,
-                children: [
-                  _buildStatRow(
-                    'Total Passes',
-                    stats.totalPasses,
-                    Icons.assignment,
-                    colorScheme,
-                    theme,
-                  ),
+        return RefreshIndicator(
+          onRefresh: () async {
+            await Future.delayed(const Duration(milliseconds: 300));
+            controller.fetchSubAgentDetails(subAgent.id!);
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Agent Info Card
+                _buildAgentInfoCard(colorScheme, theme),
 
-                  _buildStatRow(
-                    'In Request',
-                    stats.inRequestPasses,
-                    Icons.hourglass_empty,
-                    colorScheme,
-                    theme,
-                    color: Colors.blue,
-                  ),
-                  _buildStatRow(
-                    'Pending',
-                    stats.pendingPasses,
-                    Icons.schedule,
-                    colorScheme,
-                    theme,
-                    color: Colors.orange,
-                  ),
-                  _buildStatRow(
-                    'Issued',
-                    stats.issuedPasses,
-                    Icons.card_membership,
-                    colorScheme,
-                    theme,
-                    color: Colors.purple,
-                  ),
-                  _buildStatRow(
-                    'Approved',
-                    stats.approvedPasses,
-                    Icons.check_circle,
-                    colorScheme,
-                    theme,
-                    color: Colors.green,
-                  ),
-                  _buildStatRow(
-                    'Rejected',
-                    stats.rejectedPasses,
-                    Icons.cancel,
-                    colorScheme,
-                    theme,
-                    color: Colors.red,
-                  ),
-                  _buildStatRow(
-                    'Cancelled',
-                    stats.cancelledPasses,
-                    Icons.block,
-                    colorScheme,
-                    theme,
-                    color: Colors.grey,
-                  ),
-                ],
-              ),
+                const SizedBox(height: 16),
 
-              const SizedBox(height: 16),
+                // Pass Statistics Section
+                _buildSectionCard(
+                  title: 'Pass Statistics',
+                  colorScheme: colorScheme,
+                  theme: theme,
+                  children: [
+                    _buildStatRow(
+                      'Total Passes',
+                      stats.totalPasses,
+                      Icons.assignment,
+                      colorScheme,
+                      theme,
+                    ),
+                    _buildStatRow(
+                      'In Request',
+                      stats.inRequestPasses,
+                      Icons.hourglass_empty,
+                      colorScheme,
+                      theme,
+                      color: Colors.blue,
+                    ),
+                    _buildStatRow(
+                      'Pending',
+                      stats.pendingPasses,
+                      Icons.schedule,
+                      colorScheme,
+                      theme,
+                      color: Colors.orange,
+                    ),
+                    _buildStatRow(
+                      'Issued',
+                      stats.issuedPasses,
+                      Icons.card_membership,
+                      colorScheme,
+                      theme,
+                      color: Colors.purple,
+                    ),
+                    _buildStatRow(
+                      'Approved',
+                      stats.approvedPasses,
+                      Icons.check_circle,
+                      colorScheme,
+                      theme,
+                      color: Colors.green,
+                    ),
+                    _buildStatRow(
+                      'Rejected',
+                      stats.rejectedPasses,
+                      Icons.cancel,
+                      colorScheme,
+                      theme,
+                      color: Colors.red,
+                    ),
+                    _buildStatRow(
+                      'Cancelled',
+                      stats.cancelledPasses,
+                      Icons.block,
+                      colorScheme,
+                      theme,
+                      color: Colors.grey,
+                    ),
+                  ],
+                ),
 
-              // Gender-wise Pass Count Section
-              _buildSectionCard(
-                title: 'Gender-wise Pass Count',
-                colorScheme: colorScheme,
-                theme: theme,
-                children: [
-                  _buildStatRow(
-                    'Male Passes',
-                    stats.totalMalePasses,
-                    Icons.male,
-                    colorScheme,
-                    theme,
-                    color: Colors.blue,
-                  ),
-                  _buildStatRow(
-                    'Female Passes',
-                    stats.totalFemalePasses,
-                    Icons.female,
-                    colorScheme,
-                    theme,
-                    color: Colors.pink,
-                  ),
-                  _buildStatRow(
-                    'Kid Passes',
-                    stats.totalKidPasses,
-                    Icons.child_care,
-                    colorScheme,
-                    theme,
-                    color: Colors.amber,
-                  ),
-                ],
-              ),
+                const SizedBox(height: 16),
 
-              const SizedBox(height: 16),
+                // Gender-wise Pass Count Section
+                _buildSectionCard(
+                  title: 'Gender-wise Pass Count',
+                  colorScheme: colorScheme,
+                  theme: theme,
+                  children: [
+                    _buildStatRow(
+                      'Male Passes',
+                      stats.totalMalePasses,
+                      Icons.male,
+                      colorScheme,
+                      theme,
+                      color: Colors.blue,
+                    ),
+                    _buildStatRow(
+                      'Female Passes',
+                      stats.totalFemalePasses,
+                      Icons.female,
+                      colorScheme,
+                      theme,
+                      color: Colors.pink,
+                    ),
+                    _buildStatRow(
+                      'Kid Passes',
+                      stats.totalKidPasses,
+                      Icons.child_care,
+                      colorScheme,
+                      theme,
+                      color: Colors.amber,
+                    ),
+                  ],
+                ),
 
-              // Revenue Section
-              _buildSectionCard(
-                title: 'Collected Fees',
-                colorScheme: colorScheme,
-                theme: theme,
-                children: [
-                  _buildCurrencyRow(
-                    'Male Fees',
-                    stats.totalMaleCollectedFees,
-                    Icons.currency_rupee,
-                    colorScheme,
-                    theme,
-                    color: Colors.blue,
-                  ),
-                  _buildCurrencyRow(
-                    'Female Fees',
-                    stats.totalFemaleCollectedFees,
-                    Icons.currency_rupee,
-                    colorScheme,
-                    theme,
-                    color: Colors.pink,
-                  ),
-                  _buildCurrencyRow(
-                    'Kid Fees',
-                    stats.totalKidCollectedFees,
-                    Icons.currency_rupee,
-                    colorScheme,
-                    theme,
-                    color: Colors.amber,
-                  ),
-                ],
-              ),
-            ],
+                const SizedBox(height: 16),
+
+                // Revenue Section
+                _buildSectionCard(
+                  title: 'Collected Fees',
+                  colorScheme: colorScheme,
+                  theme: theme,
+                  children: [
+                    _buildCurrencyRow(
+                      'Male Fees',
+                      stats.totalMaleCollectedFees,
+                      Icons.currency_rupee,
+                      colorScheme,
+                      theme,
+                      color: Colors.blue,
+                    ),
+                    _buildCurrencyRow(
+                      'Female Fees',
+                      stats.totalFemaleCollectedFees,
+                      Icons.currency_rupee,
+                      colorScheme,
+                      theme,
+                      color: Colors.pink,
+                    ),
+                    _buildCurrencyRow(
+                      'Kid Fees',
+                      stats.totalKidCollectedFees,
+                      Icons.currency_rupee,
+                      colorScheme,
+                      theme,
+                      color: Colors.amber,
+                    ),
+                    const Divider(height: 24),
+                    _buildCurrencyRow(
+                      'Total Collected',
+                      (stats.totalMaleCollectedFees ?? 0) +
+                          (stats.totalFemaleCollectedFees ?? 0) +
+                          (stats.totalKidCollectedFees ?? 0),
+                      Icons.account_balance_wallet,
+                      colorScheme,
+                      theme,
+                      color: Colors.green,
+                      isTotal: true,
+                    ),
+                  ],
+                ),
+
+                // Add some bottom padding
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
         );
       }),
+    );
+  }
+
+  Widget _buildAgentInfoCard(ColorScheme colorScheme, ThemeData theme) {
+    return Card(
+      elevation: 2,
+      color: colorScheme.primaryContainer,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: colorScheme.primary,
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: Center(
+                child: Text(
+                  subAgent.fullName?.substring(0, 1).toUpperCase() ?? 'S',
+                  style: TextStyle(
+                    color: colorScheme.onPrimary,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    subAgent.fullName ?? 'Unknown Agent',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  if (subAgent.agentCode != null)
+                    Text(
+                      'Code: ${subAgent.agentCode}',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onPrimaryContainer.withOpacity(0.8),
+                      ),
+                    ),
+                  if (subAgent.mobile != null)
+                    Text(
+                      'Mobile: ${subAgent.mobile}',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onPrimaryContainer.withOpacity(0.8),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -278,6 +417,7 @@ class _SubAgentDetailPageState extends State<SubAgentDetailPage> {
     ColorScheme colorScheme,
     ThemeData theme, {
     Color? color,
+    bool isTotal = false,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -297,6 +437,7 @@ class _SubAgentDetailPageState extends State<SubAgentDetailPage> {
               label,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurface,
+                fontWeight: isTotal ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
           ),
@@ -305,6 +446,7 @@ class _SubAgentDetailPageState extends State<SubAgentDetailPage> {
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
               color: color ?? colorScheme.primary,
+              fontSize: isTotal ? 16 : 14,
             ),
           ),
         ],

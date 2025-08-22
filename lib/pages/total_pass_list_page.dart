@@ -316,6 +316,7 @@ class _FilterBottomSheet extends StatelessWidget {
             selectedValue: controller.selectedStatus.value,
             onChanged: (value) {
               controller.selectedStatus.value = value!;
+              controller.applyFilters();
             },
             itemToString: (item) => item,
           ),
@@ -330,6 +331,7 @@ class _FilterBottomSheet extends StatelessWidget {
             selectedValue: controller.selectedGender.value,
             onChanged: (value) {
               controller.selectedGender.value = value!;
+              controller.applyFilters();
             },
             itemToString: (item) => item,
           ),
@@ -345,6 +347,7 @@ class _FilterBottomSheet extends StatelessWidget {
               selectedValue: controller.selectedSubAgent.value,
               onChanged: (value) {
                 controller.selectedSubAgent.value = value;
+                controller.applyFilters();
               },
               itemToString: (item) => item.toString(),
             ),

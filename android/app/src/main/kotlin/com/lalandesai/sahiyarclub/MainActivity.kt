@@ -1,4 +1,4 @@
-package com.example.sahiyar_club
+package com.lalandesai.sahiyarclub
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 

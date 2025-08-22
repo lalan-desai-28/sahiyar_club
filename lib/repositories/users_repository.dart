@@ -75,6 +75,7 @@ class UsersRepository {
     required String mobile,
     required String password,
     required String parentAgentId,
+    required String parentAgentCode,
     required String nickName,
   }) async {
     final response = await dioClient.post(
@@ -88,6 +89,7 @@ class UsersRepository {
         'role': 'subagent',
         'parentAgentId': parentAgentId,
         'nickName': nickName,
+        'parentAgentCode': parentAgentCode,
       },
     );
     return Response<User?>(
@@ -106,6 +108,49 @@ class UsersRepository {
           'gender': 'male',
           'password': password,
           'parentAgentId': parentAgentId,
+        },
+      ),
+    );
+  }
+
+  // create same for update agent
+  Future<Response<User?>> updateSubAgent({
+    required String id,
+    required String fullname,
+    required String email,
+    required String mobile,
+    required String? password,
+    required String nickName,
+    required bool isActive,
+  }) async {
+    final response = await dioClient.patch(
+      '/users/$id',
+      data: {
+        'fullName': fullname,
+        'email': email,
+        'mobile': mobile,
+        if (password != null) 'password': password,
+        'gender': 'male',
+        'role': 'subagent',
+        'nickName': nickName,
+        'isActive': isActive,
+      },
+    );
+    return Response<User?>(
+      data: User.fromJson(response.data),
+      statusCode: response.statusCode,
+      statusMessage: response.statusMessage,
+      headers: response.headers,
+      requestOptions: RequestOptions(
+        path: '/users/update/$id',
+        method: 'PUT',
+        data: {
+          'fullName': fullname,
+          'email': email,
+          'mobile': mobile,
+          'role': 'subagent',
+          'gender': 'male',
+          'password': password,
         },
       ),
     );

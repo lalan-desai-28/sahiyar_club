@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:sahiyar_club/app/routes/app_routes.dart';
 import 'package:sahiyar_club/models/user.dart';
 import 'package:sahiyar_club/repositories/users_repository.dart';
@@ -9,11 +10,21 @@ class SplashController extends GetxController {
   final HiveDatabase hiveDatabase = Get.find<HiveDatabase>();
   final UsersRepository usersRepository = UsersRepository();
 
+  Rx<String> appVersion = 'Loading...'.obs;
+
   @override
   void onInit() {
     super.onInit();
-    // Initialize any necessary resources here
-    checkUserAuthentication();
+    getVersion();
+    Future.delayed(const Duration(milliseconds: 500), () {
+      checkUserAuthentication();
+    });
+  }
+
+  Future<void> getVersion() async {
+    // get version from package_info
+    final packageInfo = await PackageInfo.fromPlatform();
+    appVersion.value = 'v${packageInfo.version} (${packageInfo.buildNumber})';
   }
 
   Future<User?> getUserFromToken(String token) async {

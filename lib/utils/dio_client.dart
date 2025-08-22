@@ -65,6 +65,23 @@ class DioClient {
     );
   }
 
+  // create for patch
+
+  Future<Response<T>> patch<T>(
+    String endpoint, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) async {
+    final response = await _dio.patch<T>(
+      endpoint,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
+    );
+    return response;
+  }
+
   Future<Response<T>> get<T>(
     String endpoint, {
     Map<String, dynamic>? queryParameters,
