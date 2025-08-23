@@ -113,6 +113,33 @@ class UsersRepository {
     );
   }
 
+  Future<Response<String>> forgotPassword({
+    required String mobile,
+    required String role,
+  }) async {
+    return await dioClient.post(
+      '/auth/forgot-password',
+      data: {'mobile': mobile, 'role': role},
+    );
+  }
+
+  Future<Response<String>> resetPassword({
+    required String mobile,
+    required String otp,
+    required String role,
+    required String newPassword,
+  }) async {
+    return await dioClient.post(
+      '/auth/reset-password',
+      data: {
+        'mobile': mobile,
+        'otp': otp,
+        'newPassword': newPassword,
+        'role': role,
+      },
+    );
+  }
+
   // create same for update agent
   Future<Response<User?>> updateSubAgent({
     required String id,

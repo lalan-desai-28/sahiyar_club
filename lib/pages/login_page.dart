@@ -3,6 +3,7 @@ import 'package:get/state_manager.dart';
 import 'package:sahiyar_club/controllers/login_controller.dart';
 import 'package:sahiyar_club/widgets/custom_button.dart';
 import 'package:sahiyar_club/widgets/custom_form_field.dart';
+import 'package:sahiyar_club/widgets/forgot_password_modal.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -52,9 +53,29 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  Widget _forgotPassword() {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: TextButton(
+        onPressed: _showForgotPasswordModal,
+        child: Text('Forgot Password?'),
+      ),
+    );
+  }
+
+  void _showForgotPasswordModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const ForgotPasswordModal(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
           // SizedBox.expand(
@@ -63,12 +84,13 @@ class _LoginPageState extends State<LoginPage> {
           SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             child: Column(
-              spacing: 16.0,
+              spacing: 10.0,
               children: [
                 SizedBox(height: 100),
                 _buildLogo(),
                 _buildMobileField(),
                 _buildPasswordField(),
+                _forgotPassword(),
                 _buildLoginButton(),
               ],
             ),
