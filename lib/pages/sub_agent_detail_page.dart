@@ -92,13 +92,6 @@ class _SubAgentDetailPageState extends State<SubAgentDetailPage> {
                     color: colorScheme.onSurface.withOpacity(0.7),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Pull down to refresh',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurface.withOpacity(0.5),
-                  ),
-                ),
               ],
             ),
           );

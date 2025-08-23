@@ -17,7 +17,7 @@ class SubAgentDetailPageController extends GetxController {
       print('Error fetching sub agent details: $e');
       Get.snackbar(
         'Error',
-        'Failed to load sub agent details',
+        'Failed to load sub agent details, either sub agent does not exist or is inactive.',
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {

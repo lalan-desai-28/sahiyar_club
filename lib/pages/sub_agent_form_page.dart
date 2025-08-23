@@ -42,10 +42,6 @@ class _SubAgentFormPageState extends State<SubAgentFormPage> {
 
               const SizedBox(height: 24),
 
-              // Personal Information Section
-              _buildSectionHeader('Personal Information', theme),
-              const SizedBox(height: 12),
-
               CustomFormField(
                 controller: controller.fullNameController,
                 label: 'Full Name',
@@ -67,12 +63,7 @@ class _SubAgentFormPageState extends State<SubAgentFormPage> {
                 prefixIcon: Icon(Icons.badge_outlined),
               ),
 
-              const SizedBox(height: 24),
-
-              // Contact Information Section
-              _buildSectionHeader('Contact Information', theme),
               const SizedBox(height: 12),
-
               CustomFormField(
                 controller: controller.emailController,
                 label: 'Email Address',
@@ -94,10 +85,6 @@ class _SubAgentFormPageState extends State<SubAgentFormPage> {
                 prefixIcon: Icon(Icons.phone_outlined),
               ),
 
-              const SizedBox(height: 24),
-
-              // Security Section
-              _buildSectionHeader('Security', theme),
               const SizedBox(height: 12),
 
               CustomFormField(

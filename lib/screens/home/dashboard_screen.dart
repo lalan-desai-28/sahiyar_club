@@ -413,7 +413,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
+        mainAxisSpacing: 15,
         childAspectRatio: 1.2,
       ),
       itemCount: statusItems.length,
@@ -455,7 +455,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 child: Icon(item.icon, color: item.color, size: 28),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 6),
               AnimatedCounter(
                 value: item.count,
                 duration: const Duration(milliseconds: 800),

@@ -46,6 +46,9 @@ class _SubAgentsListPageState extends State<SubAgentsListPage> {
                     Icon(Icons.numbers, size: 16),
                     SizedBox(width: 5),
                     Text(subAgent.agentCode ?? 'No Agent Code'),
+                    Text(
+                      subAgent.isActive == true ? ' (Active)' : ' (Inactive)',
+                    ),
                   ],
                 ),
                 Row(
