@@ -1,9 +1,16 @@
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:sahiyar_club/app/routes/app_routes.dart';
 import 'package:sahiyar_club/controllers/theme_controller.dart';
 import 'package:sahiyar_club/statics/app_statics.dart';
 import 'package:sahiyar_club/utils/hive_database.dart';
+import 'package:sahiyar_club/repositories/pass_repository.dart';
+import 'package:sahiyar_club/utils/snackbar_util.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:dio/dio.dart';
+import 'dart:io';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -14,6 +21,8 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final ThemeController _themeController = Get.find<ThemeController>();
+  final PassRepository _passRepository = PassRepository();
+  final RxBool isExporting = false.obs;
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +40,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 24),
             _buildAgentSection(),
           ],
+          const SizedBox(height: 24),
+          _buildDataSection(),
           const SizedBox(height: 24),
           _buildLogoutSection(),
           const SizedBox(height: 20),
@@ -155,6 +166,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _buildDataSection() {
+    return _buildSection(
+      title: 'Data & Reports',
+      icon: Icons.analytics,
+      children: [
+        Obx(
+          () => _buildActionTile(
+            icon: Icons.download,
+            title: 'Export Passes',
+            subtitle:
+                isExporting.value
+                    ? 'Exporting passes data...'
+                    : 'Download all passes in Excel',
+            color: Colors.cyan[600]!,
+            onTap: isExporting.value ? null : _exportPassesCsv,
+            isLoading: isExporting.value,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildLogoutSection() {
     return _buildSection(
       title: 'Account',
@@ -255,7 +288,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String title,
     required String subtitle,
     required Color color,
-    required VoidCallback onTap,
+    required VoidCallback? onTap,
+    bool isLoading = false,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -274,13 +308,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: color.withOpacity(0.15),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: color, size: 24),
+          child:
+              isLoading
+                  ? SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                    ),
+                  )
+                  : Icon(icon, color: color, size: 24),
         ),
         title: Text(
           title,
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color:
+                onTap == null
+                    ? Theme.of(context).colorScheme.onSurface.withOpacity(0.5)
+                    : null,
+          ),
         ),
         subtitle: Text(
           subtitle,
@@ -288,14 +336,157 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
           ),
         ),
-        trailing: Icon(
-          Icons.arrow_forward_ios,
-          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-          size: 16,
-        ),
+        trailing:
+            isLoading
+                ? null
+                : Icon(
+                  Icons.arrow_forward_ios,
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(
+                    onTap == null ? 0.3 : 0.5,
+                  ),
+                  size: 16,
+                ),
         onTap: onTap,
+        enabled: onTap != null,
       ),
     );
+  }
+
+  Future<void> _exportPassesCsv() async {
+    try {
+      isExporting.value = true;
+
+      // Handle permissions based on platform and Android version
+      if (Platform.isAndroid) {
+        final androidInfo = await DeviceInfoPlugin().androidInfo;
+        final sdkInt = androidInfo.version.sdkInt;
+
+        // For Android 13+ (API 33+), we need different permissions
+        if (sdkInt >= 33) {
+          // Android 13+ uses granular media permissions
+          var status = await Permission.photos.request();
+          if (!status.isGranted) {
+            status = await Permission.manageExternalStorage.request();
+            if (!status.isGranted) {
+              SnackbarUtil.showErrorSnackbar(
+                title: 'Permission Denied',
+                message:
+                    'Storage permission is required to save files to Downloads.',
+              );
+              return;
+            }
+          }
+        } else if (sdkInt >= 30) {
+          // Android 11-12 (API 30-32)
+          var status = await Permission.manageExternalStorage.request();
+          if (!status.isGranted) {
+            status = await Permission.storage.request();
+            if (!status.isGranted) {
+              SnackbarUtil.showErrorSnackbar(
+                title: 'Permission Denied',
+                message:
+                    'Storage permission is required to save files to Downloads.',
+              );
+              return;
+            }
+          }
+        } else {
+          // Android 10 and below (API <= 29)
+          var status = await Permission.storage.request();
+          if (!status.isGranted) {
+            SnackbarUtil.showErrorSnackbar(
+              title: 'Permission Denied',
+              message:
+                  'Storage permission is required to save files to Downloads.',
+            );
+            return;
+          }
+        }
+      }
+
+      final response = await _passRepository.dioClient.get(
+        '/passes/export',
+        options: Options(responseType: ResponseType.bytes),
+      );
+
+      if (response.statusCode == 200) {
+        final bytes = response.data as List<int>;
+
+        Directory? downloadDir;
+        String dirType = '';
+
+        if (Platform.isAndroid) {
+          try {
+            // Try to get external storage Downloads directory
+            downloadDir = Directory('/storage/emulated/0/Download');
+            if (!await downloadDir.exists()) {
+              // Fallback to getDownloadsDirectory()
+              downloadDir = await getDownloadsDirectory();
+              dirType = 'App Downloads';
+            } else {
+              dirType = 'Downloads';
+            }
+          } catch (e) {
+            // Final fallback to external storage directory
+            final externalDir = await getExternalStorageDirectory();
+            downloadDir = Directory('${externalDir?.path}/Download');
+            if (!await downloadDir.exists()) {
+              await downloadDir.create(recursive: true);
+            }
+            dirType = 'Downloads';
+          }
+        } else if (Platform.isIOS) {
+          // iOS: Use Documents directory as Downloads concept doesn't exist
+          downloadDir = await getApplicationDocumentsDirectory();
+          dirType = 'Files App';
+        }
+
+        if (downloadDir == null) {
+          SnackbarUtil.showErrorSnackbar(
+            title: 'Export Error',
+            message: 'Unable to access storage directory',
+          );
+          return;
+        }
+
+        final dateTime = DateTime.now();
+        final formattedDateTime =
+            '${dateTime.day.toString().padLeft(2, '0')}-'
+            '${dateTime.month.toString().padLeft(2, '0')}-'
+            '${dateTime.year}_'
+            '${dateTime.hour.toString().padLeft(2, '0')}-'
+            '${dateTime.minute.toString().padLeft(2, '0')}-'
+            '${dateTime.second.toString().padLeft(2, '0')}';
+
+        final fileName = 'sahiyar_passes_$formattedDateTime.csv';
+        final file = File('${downloadDir.path}/$fileName');
+
+        await file.writeAsBytes(bytes);
+
+        SnackbarUtil.showSuccessSnackbar(
+          title: 'Export Successful',
+          message:
+              Platform.isIOS
+                  ? 'CSV saved to Files App: $fileName'
+                  : 'CSV saved to $dirType: $fileName',
+        );
+
+        print('CSV file exported successfully: ${file.path}');
+      } else {
+        SnackbarUtil.showErrorSnackbar(
+          title: 'Export Failed',
+          message: 'Server error: ${response.statusMessage ?? 'Unknown error'}',
+        );
+      }
+    } catch (e) {
+      SnackbarUtil.showErrorSnackbar(
+        title: 'Export Error',
+        message: 'Failed to export CSV: ${e.toString()}',
+      );
+      print('Error exporting CSV file: $e');
+    } finally {
+      isExporting.value = false;
+    }
   }
 
   void _showLogoutDialog() {

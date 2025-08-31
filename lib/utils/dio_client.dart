@@ -65,6 +65,21 @@ class DioClient {
     );
   }
 
+  // create download function
+  Future<Response<List<int>>> download(
+    String url, {
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) async {
+    final response = await _dio.get<List<int>>(
+      url,
+      queryParameters: queryParameters,
+      options:
+          options?.copyWith(responseType: ResponseType.bytes) ??
+          Options(responseType: ResponseType.bytes),
+    );
+    return response;
+  }
   // create for patch
 
   Future<Response<T>> patch<T>(

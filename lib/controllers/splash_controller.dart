@@ -28,6 +28,7 @@ class SplashController extends GetxController {
   }
 
   Future<User?> getUserFromToken(String token) async {
+    // print('Fetching user with token: $token');
     if (token.isEmpty) {
       return null;
     }

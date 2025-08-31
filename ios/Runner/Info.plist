@@ -3,6 +3,12 @@
 <plist version="1.0">
 	<dict>
 
+		<key>LSSupportsOpeningDocumentsInPlace</key>
+		<true/>
+		<key>UIFileSharingEnabled</key>
+		<true/>
+
+
 		<key>NSCameraUsageDescription</key>
 		<string>We use the camera to capture profile photo and ID proof.</string>
 

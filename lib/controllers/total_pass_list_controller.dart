@@ -22,18 +22,13 @@ class TotalPassListController extends GetxController {
 
   final selectedStatus = Rxn<String>();
   final selectedGender = Rxn<String>();
+  final isAmountPaid = Rxn<bool>();
 
   int _currentPage = 1;
   static const int _pageSize = 10;
 
   // Filter options
-  final statusOptions = [
-    'InRequest',
-    'Pending',
-    'Approved',
-    'Issued',
-    'RejectedForQuery',
-  ];
+  final statusOptions = ['Pending', 'Approved', 'Issued', 'RejectedForQuery'];
 
   void getSubAgents() async {
     isLoading.value = true;
@@ -94,6 +89,7 @@ class TotalPassListController extends GetxController {
         status: selectedStatus.value,
         gender: selectedGender.value,
         subAgentId: selectedSubAgent.value?.id,
+        isAmountPaid: isAmountPaid.value,
       );
 
       if (response.statusCode == 200) {
@@ -122,6 +118,7 @@ class TotalPassListController extends GetxController {
         status: selectedStatus.value,
         gender: selectedGender.value,
         subAgentId: selectedSubAgent.value?.id,
+        isAmountPaid: isAmountPaid.value,
       );
 
       if (response.statusCode == 200) {
@@ -154,6 +151,7 @@ class TotalPassListController extends GetxController {
     selectedStatus.value = null;
     selectedGender.value = null;
     selectedSubAgent.value = null;
+    isAmountPaid.value = null;
     fetchPasses();
   }
 
@@ -171,6 +169,9 @@ class TotalPassListController extends GetxController {
     }
     if (selectedSubAgent.value != null) {
       activeFilters.add('Sub Agent: ${selectedSubAgent.value?.nickName}');
+    }
+    if (isAmountPaid.value != null) {
+      activeFilters.add('Payment: ${isAmountPaid.value! ? 'Paid' : 'Unpaid'}');
     }
     return activeFilters.isEmpty ? 'All Passes' : activeFilters.join(' • ');
   }

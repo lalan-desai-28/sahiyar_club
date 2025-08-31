@@ -239,7 +239,7 @@ class CreatePassController extends GetxController {
         dob: _dateFormatter.format(selectedDate.value),
         mobile: mobileController.text.trim(),
         gender: gender.value.toLowerCase(),
-        status: isPaymentDone.value ? 'Pending' : 'InRequest',
+        isAmountPaid: isPaymentDone.value,
         profilePhoto: File(profileImage.value!.path),
         idProof: File(idProofImage.value!.path),
       );

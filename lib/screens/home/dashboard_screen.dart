@@ -371,13 +371,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildStatusGrid(dynamic stats) {
     final statusItems = [
       _StatusItem(
-        'In Request',
-        stats?.inRequestPasses ?? 0,
-        Icons.send,
-        Colors.blue[600]!,
-        'InRequest',
-      ),
-      _StatusItem(
         'Pending',
         stats?.pendingPasses ?? 0,
         Icons.pending,

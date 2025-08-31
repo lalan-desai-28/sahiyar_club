@@ -72,7 +72,8 @@ class _TotalPassListPageState extends State<TotalPassListPage> {
         Obx(
           () =>
               _controller.selectedStatus.value != null ||
-                      _controller.selectedGender.value != null
+                      _controller.selectedGender.value != null ||
+                      _controller.isAmountPaid.value != null
                   ? IconButton(
                     icon: Icon(
                       Icons.clear,
@@ -353,6 +354,49 @@ class _FilterBottomSheet extends StatelessWidget {
             ),
           ),
         ],
+
+        // Payment Status Checkbox
+        const SizedBox(height: 20),
+        Obx(
+          () => Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: CheckboxListTile(
+              title: Text(
+                'Amount Paid',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              subtitle: Text(
+                'Show only passes where amount is paid',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.6),
+                ),
+              ),
+              value: controller.isAmountPaid.value,
+              tristate: true,
+              onChanged: (value) {
+                controller.isAmountPaid.value = value;
+                controller.applyFilters();
+              },
+              activeColor: Colors.amber[600],
+              checkColor: Colors.white,
+              controlAffinity: ListTileControlAffinity.leading,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 4,
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }

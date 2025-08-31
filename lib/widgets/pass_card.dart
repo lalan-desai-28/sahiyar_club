@@ -334,13 +334,26 @@ class _PassCardState extends State<PassCard> {
               ),
             ),
             const SizedBox(width: 6),
-            Text(
-              _getStatusText(),
-              style: TextStyle(
-                color: _getStatusColor(),
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
+            Row(
+              children: [
+                Text(
+                  _getStatusText(),
+                  style: TextStyle(
+                    color: _getStatusColor(),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                if (_currentPass.paymentRefId != "TXN-AGT") ...[
+                  // show website icon
+                  Row(
+                    children: [
+                      SizedBox(width: 4),
+                      Icon(Icons.language, size: 14, color: Colors.grey[600]),
+                    ],
+                  ),
+                ],
+              ],
             ),
           ],
         ),
@@ -355,16 +368,16 @@ class _PassCardState extends State<PassCard> {
     }
 
     // Only show switch when status is "inrequest" or "pending"
-    final status = _currentPass.status?.toLowerCase().trim();
-    final ifSubagentThenHideToggle =
-        _currentPass.requestedBy?.role == 'subagent';
-    if (status == 'inrequest' ||
-        (status == 'pending' && !ifSubagentThenHideToggle)) {
-      return _buildStatusToggle();
-    }
+    // final status = _currentPass.status?.toLowerCase().trim();
+    // final ifSubagentThenHideToggle =
+    // _currentPass.requestedBy?.role == 'subagent';
+    // if (status == 'inrequest' ||
+    // (status == 'pending' && !ifSubagentThenHideToggle)) {
+    return _buildStatusToggle();
+    // }
 
     // Hide toggle for other statuses
-    return const SizedBox.shrink();
+    // return const SizedBox.shrink();
   }
 
   Widget _buildLoadingIndicator() {
@@ -400,19 +413,15 @@ class _PassCardState extends State<PassCard> {
     try {
       final response =
           isPaid
-              ? await _passRepository.changeToPending(_currentPass.sId!)
-              : await _passRepository.changeToInRequest(_currentPass.sId!);
+              ? await _passRepository.changeToPaid(_currentPass.sId!)
+              : await _passRepository.changeToUnpaid(_currentPass.sId!);
 
       if (response.statusCode == 200) {
         // Update local pass state based on the action
         setState(() {
           if (isPaid) {
-            // Payment done: change to pending
-            _currentPass.status = 'pending';
             _currentPass.isAmountPaid = true;
           } else {
-            // Payment not done: change to inrequest
-            _currentPass.status = 'inrequest';
             _currentPass.isAmountPaid = false;
           }
         });
@@ -524,7 +533,7 @@ class _PassCardState extends State<PassCard> {
   bool _isPaymentDone() {
     // Payment is done when status is "pending"
     // Payment is not done when status is "inrequest"
-    return _currentPass.status?.toLowerCase().trim() == 'pending';
+    return _currentPass.isAmountPaid == true;
   }
 
   void _navigateToUpdatePass() {

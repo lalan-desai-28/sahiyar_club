@@ -238,7 +238,7 @@ class _PaymentStatus extends StatelessWidget {
           ),
         ),
         Text(
-          isPaymentDone ? 'Paid' : 'Pending',
+          isPaymentDone ? 'Paid' : 'Unpaid',
           style: theme.textTheme.bodySmall?.copyWith(
             color: isPaymentDone ? Colors.green[600] : Colors.orange[600],
             fontWeight: FontWeight.w500,

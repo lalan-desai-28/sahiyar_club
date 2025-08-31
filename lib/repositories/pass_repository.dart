@@ -67,9 +67,9 @@ class PassRepository {
     required String mobile,
     required String dob,
     required String gender,
-    required String status,
     required File profilePhoto,
     required File idProof,
+    required bool isAmountPaid,
   }) async {
     final formData = FormData.fromMap({
       'pass': jsonEncode({
@@ -78,7 +78,8 @@ class PassRepository {
         'gender': gender,
         'dob': dob,
         'mobile': mobile,
-        'status': status,
+        'status': 'Pending',
+        'isAmountPaid': isAmountPaid,
       }),
       'profilePhoto': await MultipartFile.fromFile(
         profilePhoto.path,
@@ -206,6 +207,7 @@ class PassRepository {
     required String? status,
     required String? gender,
     required String? subAgentId,
+    bool? isAmountPaid,
   }) async {
     final response = await dioClient.get(
       '/passes/my',
@@ -216,6 +218,7 @@ class PassRepository {
         if (status != null) 'passStatus': status,
         if (gender != null) 'gender': gender.toLowerCase(),
         if (subAgentId != null) 'subAgentId': subAgentId,
+        if (isAmountPaid != null) 'isAmountPaid': isAmountPaid,
       },
     );
 
@@ -236,10 +239,8 @@ class PassRepository {
     );
   }
 
-  /// Marks payment as done for a pending pass
-  /// Endpoint: POST /api/admin/{id}/pending
-  Future<Response<dynamic>> changeToPending(String passId) async {
-    final response = await dioClient.post('/admin/$passId/pending', data: {});
+  Future<Response<dynamic>> changeToPaid(String passId) async {
+    final response = await dioClient.post('/admin/$passId/setPaid', data: {});
 
     return Response<dynamic>(
       data: response.data,
@@ -255,11 +256,8 @@ class PassRepository {
     );
   }
 
-  Future<Response<dynamic>> changeToInRequest(String passId) async {
-    final response = await dioClient.post(
-      '/admin/$passId/in-request',
-      data: {},
-    );
+  Future<Response<dynamic>> changeToUnpaid(String passId) async {
+    final response = await dioClient.post('/admin/$passId/setUnpaid', data: {});
 
     return Response<dynamic>(
       data: response.data,
