@@ -84,7 +84,9 @@ class PassListController extends GetxController {
       );
 
       if (resp.statusCode == 200) {
-        final List<FullPass> fetched = List<FullPass>.from(resp.data ?? []);
+        final List<FullPass> fetched = List<FullPass>.from(
+          resp.data?.passes ?? [],
+        );
         passes.assignAll(fetched);
         hasMoreData.value = fetched.length == _pageSize;
       } else {
@@ -114,7 +116,9 @@ class PassListController extends GetxController {
       );
 
       if (resp.statusCode == 200) {
-        final List<FullPass> more = List<FullPass>.from(resp.data ?? []);
+        final List<FullPass> more = List<FullPass>.from(
+          resp.data?.passes ?? [],
+        );
         if (more.isNotEmpty) {
           passes.addAll(more);
           _currentPage = nextPage;

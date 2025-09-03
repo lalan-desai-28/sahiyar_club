@@ -10,6 +10,7 @@ import 'package:sahiyar_club/repositories/pass_repository.dart';
 import 'package:sahiyar_club/utils/snackbar_util.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 
 class ProfileScreen extends StatefulWidget {
@@ -23,6 +24,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final ThemeController _themeController = Get.find<ThemeController>();
   final PassRepository _passRepository = PassRepository();
   final RxBool isExporting = false.obs;
+  final RxBool inclusiveSubAgents = false.obs;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInclusiveSubAgentsPreference();
+  }
+
+  Future<void> _loadInclusiveSubAgentsPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    inclusiveSubAgents.value = prefs.getBool('inclusiveSubAgents') ?? true;
+  }
+
+  Future<void> _saveInclusiveSubAgentsPreference(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('inclusiveSubAgents', value);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +106,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return _buildSection(
       title: 'Preferences',
       icon: Icons.settings,
-      children: [_buildThemeToggle()],
+      children: [_buildThemeToggle(), _buildInclusiveSubAgentsToggle()],
     );
   }
 
@@ -144,6 +162,61 @@ class _ProfileScreenState extends State<ProfileScreen> {
             value: _themeController.isDarkMode.value,
             onChanged: (value) => _themeController.toggleTheme(),
             activeColor: Colors.amber,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInclusiveSubAgentsToggle() {
+    return Obx(
+      () => Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: Theme.of(context).dividerColor.withOpacity(0.1),
+          ),
+        ),
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 8,
+          ),
+          leading: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.teal[100],
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              inclusiveSubAgents.value ? Icons.group : Icons.person,
+              color: Colors.teal[600],
+              size: 24,
+            ),
+          ),
+          title: Text(
+            'Include Sub Agents',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          subtitle: Text(
+            inclusiveSubAgents.value
+                ? 'Show all passes including sub agents in dashboard screen.'
+                : 'Show only your passes in dashboard screen.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            ),
+          ),
+          trailing: Checkbox(
+            value: inclusiveSubAgents.value,
+            onChanged: (value) {
+              inclusiveSubAgents.value = value ?? false;
+              _saveInclusiveSubAgentsPreference(inclusiveSubAgents.value);
+            },
+            activeColor: Colors.teal[600],
           ),
         ),
       ),

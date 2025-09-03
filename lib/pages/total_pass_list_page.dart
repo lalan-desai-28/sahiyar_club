@@ -32,11 +32,26 @@ class _TotalPassListPageState extends State<TotalPassListPage> {
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'All Passes',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).colorScheme.onSurface,
+          Obx(
+            () => Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'All Passes',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                SizedBox(width: 8),
+                Text(
+                  '( Total ${_controller.totalPassCount.value} )',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ],
             ),
           ),
           Obx(
@@ -309,6 +324,20 @@ class _FilterBottomSheet extends StatelessWidget {
 
     return Column(
       children: [
+        // Fee Dropdown
+        Obx(
+          () => CustomDropdown(
+            label: 'Fee Batch',
+            items: controller.feeBatches,
+            selectedValue: controller.selectedFeeBatch.value,
+            onChanged: (value) {
+              controller.selectedFeeBatch.value = value!;
+              controller.applyFilters();
+            },
+            itemToString: (item) => item.batchName ?? "Fee Batch",
+          ),
+        ),
+        const SizedBox(height: 16),
         // Status Dropdown
         Obx(
           () => CustomDropdown(

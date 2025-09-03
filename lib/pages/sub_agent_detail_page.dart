@@ -127,14 +127,6 @@ class _SubAgentDetailPageState extends State<SubAgentDetailPage> {
                       theme,
                     ),
                     _buildStatRow(
-                      'In Request',
-                      stats.inRequestPasses,
-                      Icons.hourglass_empty,
-                      colorScheme,
-                      theme,
-                      color: Colors.blue,
-                    ),
-                    _buildStatRow(
                       'Pending',
                       stats.pendingPasses,
                       Icons.schedule,

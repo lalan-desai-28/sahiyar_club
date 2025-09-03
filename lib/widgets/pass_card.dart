@@ -56,7 +56,7 @@ class _PassCardState extends State<PassCard> {
               Expanded(child: _buildPassDetails()),
 
               // Trailing - Switch or Loading or Status Badge
-              _buildTrailing(),
+              if (_currentPass.paymentRefId == "TXN-AGT") _buildTrailing(),
             ],
           ),
         ),

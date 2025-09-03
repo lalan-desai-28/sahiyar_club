@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:sahiyar_club/app/routes/app_routes.dart';
@@ -32,6 +34,7 @@ class SplashController extends GetxController {
     if (token.isEmpty) {
       return null;
     }
+    log("Token: $token");
     final response = await usersRepository.me(token: token);
     if (response.statusCode == 200) {
       return response.data;

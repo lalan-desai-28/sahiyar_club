@@ -8,6 +8,7 @@ import 'package:sahiyar_club/widgets/custom_dropdown.dart';
 import 'package:sahiyar_club/widgets/custom_form_field.dart';
 import 'package:sahiyar_club/widgets/profile_avatar_widget.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CreatePassScreen extends StatefulWidget {
   const CreatePassScreen({super.key});
@@ -25,6 +26,7 @@ class _CreatePassScreenState extends State<CreatePassScreen> {
     super.initState();
     _controller = Get.find<CreatePassController>();
     _genderItems = _buildGenderItems();
+    _loadLastSelectedGender();
   }
 
   List<String> _buildGenderItems() {
@@ -33,6 +35,19 @@ class _CreatePassScreenState extends State<CreatePassScreen> {
       items.add('Guest');
     }
     return items;
+  }
+
+  Future<void> _loadLastSelectedGender() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastGender = prefs.getString('last_selected_gender');
+    if (lastGender != null && _genderItems.contains(lastGender)) {
+      _controller.gender.value = lastGender;
+    }
+  }
+
+  Future<void> _saveSelectedGender(String gender) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('last_selected_gender', gender);
   }
 
   @override
@@ -51,7 +66,7 @@ class _CreatePassScreenState extends State<CreatePassScreen> {
           const SizedBox(height: 14),
           _buildMobileField(),
           const SizedBox(height: 14),
-          _buildGenderDropdown(),
+          _buildGenderRadioButtons(),
           const SizedBox(height: 14),
           _buildDateOfBirthField(),
           _buildPaymentSwitch(),
@@ -111,15 +126,87 @@ class _CreatePassScreenState extends State<CreatePassScreen> {
     );
   }
 
-  Widget _buildGenderDropdown() {
-    return Obx(
-      () => CustomDropdown(
-        label: 'Gender',
-        items: _genderItems,
-        selectedValue: _controller.gender.value,
-        onChanged: (value) => _controller.gender.value = value!,
-        itemToString: (item) => item,
-      ),
+  Widget _buildGenderRadioButtons() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Gender',
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          height: 56,
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: colorScheme.outline.withOpacity(0.3)),
+            boxShadow: [
+              BoxShadow(
+                color: colorScheme.shadow.withOpacity(0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final itemWidth = constraints.maxWidth / _genderItems.length;
+              final needsScroll = itemWidth < 70;
+
+              if (needsScroll) {
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Row(
+                    children:
+                        _genderItems.map((gender) {
+                          return SizedBox(
+                            width: 70,
+                            child: Obx(
+                              () => GenderRadioTile(
+                                gender: gender,
+                                isSelected: _controller.gender.value == gender,
+                                onTap: () {
+                                  _controller.gender.value = gender;
+                                  _saveSelectedGender(gender);
+                                },
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                  ),
+                );
+              } else {
+                return Row(
+                  children:
+                      _genderItems.map((gender) {
+                        return Expanded(
+                          child: Obx(
+                            () => GenderRadioTile(
+                              gender: gender,
+                              isSelected: _controller.gender.value == gender,
+                              onTap: () {
+                                _controller.gender.value = gender;
+                                _saveSelectedGender(gender);
+                              },
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                );
+              }
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -191,6 +278,108 @@ class _CreatePassScreenState extends State<CreatePassScreen> {
         ),
       );
     });
+  }
+}
+
+class GenderRadioTile extends StatelessWidget {
+  final String gender;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const GenderRadioTile({
+    super.key,
+    required this.gender,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  IconData _getGenderIcon(String gender) {
+    switch (gender.toLowerCase()) {
+      case 'male':
+        return Icons.male;
+      case 'female':
+        return Icons.female;
+      case 'kid':
+        return Icons.child_care;
+      case 'guest':
+        return Icons.favorite;
+      default:
+        return Icons.person;
+    }
+  }
+
+  Color _getGenderColor(String gender, bool isSelected) {
+    if (!isSelected) return Colors.grey[600]!;
+
+    switch (gender.toLowerCase()) {
+      case 'male':
+        return Colors.blue[600]!;
+      case 'female':
+        return Colors.pink[600]!;
+      case 'kid':
+        return Colors.orange[600]!;
+      case 'guest':
+        return Colors.purple[600]!;
+      default:
+        return Colors.grey[600]!;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      height: 48,
+      margin: const EdgeInsets.all(4),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          decoration: BoxDecoration(
+            color:
+                isSelected
+                    ? _getGenderColor(gender, true).withOpacity(0.15)
+                    : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            border:
+                isSelected
+                    ? Border.all(
+                      color: _getGenderColor(gender, true),
+                      width: 1.5,
+                    )
+                    : Border.all(color: Colors.grey.withOpacity(0.3), width: 1),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(
+                _getGenderIcon(gender),
+                size: 16,
+                color: _getGenderColor(gender, isSelected),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                gender,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  color:
+                      isSelected
+                          ? _getGenderColor(gender, true)
+                          : colorScheme.onSurface,
+                  fontSize: 9,
+                ),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

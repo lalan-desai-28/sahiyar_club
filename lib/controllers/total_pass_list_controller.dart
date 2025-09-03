@@ -1,8 +1,10 @@
 // TotalPassListController
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:sahiyar_club/models/fee_batch.dart';
 import 'package:sahiyar_club/models/pass_full.dart';
 import 'package:sahiyar_club/models/user.dart';
+import 'package:sahiyar_club/repositories/misc_repository.dart';
 import 'package:sahiyar_club/repositories/pass_repository.dart';
 import 'package:sahiyar_club/repositories/users_repository.dart';
 import 'package:sahiyar_club/statics/app_statics.dart';
@@ -12,9 +14,11 @@ class TotalPassListController extends GetxController {
   final PassRepository _passRepository = PassRepository();
   final UsersRepository _usersRepository = UsersRepository();
   final ScrollController scrollController = ScrollController();
+  final MiscRepository _miscRepository = MiscRepository();
 
   final passes = <FullPass>[].obs;
   final subAgents = <User>[].obs;
+  final feeBatches = <FeeBatch>[].obs;
   final isLoading = false.obs;
   final isLoadingMore = false.obs;
   final hasMoreData = true.obs;
@@ -23,6 +27,10 @@ class TotalPassListController extends GetxController {
   final selectedStatus = Rxn<String>();
   final selectedGender = Rxn<String>();
   final isAmountPaid = Rxn<bool>();
+
+  final selectedFeeBatch = Rxn<FeeBatch>();
+
+  final totalPassCount = 0.obs;
 
   int _currentPage = 1;
   static const int _pageSize = 10;
@@ -34,6 +42,13 @@ class TotalPassListController extends GetxController {
     isLoading.value = true;
     final subagents = await _usersRepository.getSubAgents();
     subAgents.assignAll(subagents.data ?? []);
+    isLoading.value = false;
+  }
+
+  void getFeeBatches() async {
+    isLoading.value = true;
+    final feeBatches = await _miscRepository.getAllFeeBatches();
+    this.feeBatches.assignAll(feeBatches);
     isLoading.value = false;
   }
 
@@ -53,6 +68,7 @@ class TotalPassListController extends GetxController {
     if (AppStatics.currentUser?.role == "agent") {
       getSubAgents();
     }
+    getFeeBatches();
   }
 
   @override
@@ -90,10 +106,14 @@ class TotalPassListController extends GetxController {
         gender: selectedGender.value,
         subAgentId: selectedSubAgent.value?.id,
         isAmountPaid: isAmountPaid.value,
+        feeBatchId: selectedFeeBatch.value?.sId,
       );
 
+      // print(response.data.)
+      totalPassCount.value = response.data?.totalCount ?? 0;
+
       if (response.statusCode == 200) {
-        final newPasses = List<FullPass>.from(response.data ?? []);
+        final newPasses = List<FullPass>.from(response.data?.passes ?? []);
         passes.assignAll(newPasses);
         hasMoreData.value = newPasses.length == _pageSize;
       } else {
@@ -119,10 +139,11 @@ class TotalPassListController extends GetxController {
         gender: selectedGender.value,
         subAgentId: selectedSubAgent.value?.id,
         isAmountPaid: isAmountPaid.value,
+        feeBatchId: selectedFeeBatch.value?.sId,
       );
 
       if (response.statusCode == 200) {
-        final newPasses = List<FullPass>.from(response.data ?? []);
+        final newPasses = List<FullPass>.from(response.data?.passes ?? []);
 
         if (newPasses.isNotEmpty) {
           passes.addAll(newPasses);

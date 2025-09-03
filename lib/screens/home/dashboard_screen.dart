@@ -97,9 +97,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       children: [
         _buildCurrentFeesCard(stats?.currentFeeBatch),
         const SizedBox(height: 20),
-        _buildSectionHeader('Pass Statistics', Icons.analytics),
+        _buildSectionHeader('Pass Statistics', Icons.analytics, showIcon: true),
         const SizedBox(height: 16),
         _buildTotalPassCard(stats?.totalPasses ?? 0),
+        // const SizedBox(height: 16),
+        // _buildInclusiveSubAgentsFilter(context),
         const SizedBox(height: 16),
         _buildStatusGrid(stats),
       ],
@@ -196,10 +198,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: _buildFeeItemWithMRP(
                   'Male',
                   feeBatch.maleFee ?? 0,
-                  2500, // MRP
+                  feeBatch.maleMrp ?? feeBatch.maleFee ?? 0,
                   Icons.male,
                   const Color(0xFF60A5FA),
-                  feeBatch.showDiscountedPrice ?? false,
+                  feeBatch.maleFee! < feeBatch.maleMrp!,
                 ),
               ),
               const SizedBox(width: 12),
@@ -207,10 +209,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: _buildFeeItemWithMRP(
                   'Female',
                   feeBatch.femaleFee ?? 0,
-                  2500, // MRP
+                  feeBatch.femaleMrp ?? feeBatch.femaleFee ?? 0,
                   Icons.female,
                   const Color(0xFFF472B6),
-                  feeBatch.showDiscountedPrice ?? false,
+                  feeBatch.femaleFee! < feeBatch.femaleMrp!,
                 ),
               ),
               const SizedBox(width: 12),
@@ -218,10 +220,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: _buildFeeItemWithMRP(
                   'Kid',
                   feeBatch.kidFee ?? 0,
-                  1700, // MRP
+                  feeBatch.kidMrp ?? feeBatch.kidFee ?? 0,
                   Icons.child_care,
                   const Color(0xFFFBBF24),
-                  feeBatch.showDiscountedPrice ?? false,
+                  feeBatch.kidFee! < feeBatch.kidMrp!,
                 ),
               ),
             ],
@@ -681,26 +683,193 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildSectionHeader(String title, IconData icon) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.amber.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(8),
+  Widget _buildInclusiveSubAgentsFilter(BuildContext context) {
+    return Obx(
+      () => Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          border: Border.all(
+            color:
+                _controller.inclusiveSubAgents.value
+                    ? Colors.amber.withOpacity(0.3)
+                    : Theme.of(context).colorScheme.outline.withOpacity(0.3),
           ),
-          child: Icon(icon, color: Colors.amber[700], size: 20),
+          borderRadius: BorderRadius.circular(12),
         ),
-        const SizedBox(width: 12),
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onSurface,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Include Sub-Agent Passes',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _controller.inclusiveSubAgents.value
+                            ? 'Currently showing passes from all sub-agents'
+                            : 'Showing only your passes',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Transform.scale(
+                  scale: 1.1,
+                  child: Switch(
+                    value: _controller.inclusiveSubAgents.value,
+                    onChanged: (value) {
+                      _controller.inclusiveSubAgents.value = value;
+                      _controller.fetchStats();
+                    },
+                    activeColor: Colors.amber[600],
+                    activeTrackColor: Colors.amber.withOpacity(0.3),
+                    inactiveThumbColor: Theme.of(context).colorScheme.outline,
+                    inactiveTrackColor: Theme.of(
+                      context,
+                    ).colorScheme.outline.withOpacity(0.2),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color:
+                    _controller.inclusiveSubAgents.value
+                        ? Colors.amber.withOpacity(0.08)
+                        : Colors.grey.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    _controller.inclusiveSubAgents.value
+                        ? Icons.info_outline
+                        : Icons.person_outline,
+                    size: 16,
+                    color:
+                        _controller.inclusiveSubAgents.value
+                            ? Colors.amber[700]
+                            : Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withOpacity(0.6),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _controller.inclusiveSubAgents.value
+                          ? 'Default: Includes passes from all your sub-agents along with your own passes'
+                          : 'Only your directly created passes will be shown',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color:
+                            _controller.inclusiveSubAgents.value
+                                ? Colors.amber[700]
+                                : Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withOpacity(0.6),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, IconData icon, {bool? showIcon}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.amber.withOpacity(0.2),
+                  Colors.amber.withOpacity(0.1),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.amber.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Icon(icon, color: Colors.amber[600], size: 22),
           ),
-        ),
-      ],
+          const SizedBox(width: 16),
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Flexible(
+                  child: Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.onSurface,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+                if (showIcon == true) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color:
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.outline.withOpacity(0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      _controller.inclusiveSubAgents.value ? 'All' : 'Yours',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

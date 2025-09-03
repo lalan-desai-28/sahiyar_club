@@ -218,7 +218,6 @@ class CreatePassController extends GetxController {
     );
     profileImage.value = null;
     idProofImage.value = null;
-    gender.value = "Male";
 
     // Hide keyboard efficiently
     final context = Get.context;

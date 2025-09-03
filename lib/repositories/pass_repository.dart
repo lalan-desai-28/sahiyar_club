@@ -6,6 +6,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:get/get.dart' hide Response, FormData, MultipartFile;
 import 'package:sahiyar_club/models/pass.dart';
 import 'package:sahiyar_club/models/pass_full.dart';
+import 'package:sahiyar_club/models/passes_base_response.dart';
 import 'package:sahiyar_club/utils/dio_client.dart';
 import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
@@ -200,14 +201,16 @@ class PassRepository {
     }
   }
 
-  Future<Response<List<FullPass>>> getMyPasses({
+  Future<Response<PassesBaseResponse>> getMyPasses({
     String? search,
     required int? page,
     required int? limit,
     required String? status,
     required String? gender,
     required String? subAgentId,
+    String? feeBatchId,
     bool? isAmountPaid,
+    bool? includeSubAgents,
   }) async {
     final response = await dioClient.get(
       '/passes/my',
@@ -219,14 +222,13 @@ class PassRepository {
         if (gender != null) 'gender': gender.toLowerCase(),
         if (subAgentId != null) 'subAgentId': subAgentId,
         if (isAmountPaid != null) 'isAmountPaid': isAmountPaid,
+        if (feeBatchId != null) 'feeBatchId': feeBatchId,
+        if (includeSubAgents != null) 'includeSubAgents': includeSubAgents,
       },
     );
 
-    return Response<List<FullPass>>(
-      data:
-          (response.data['passes'] as List)
-              .map((e) => FullPass.fromJson(e))
-              .toList(),
+    return Response<PassesBaseResponse>(
+      data: PassesBaseResponse.fromJson(response.data),
       statusCode: response.statusCode,
       statusMessage: response.statusMessage,
       requestOptions: RequestOptions(

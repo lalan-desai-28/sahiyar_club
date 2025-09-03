@@ -94,6 +94,9 @@ class CurrentFeeBatch {
   int? maleFee;
   int? femaleFee;
   int? kidFee;
+  int? kidMrp;
+  int? femaleMrp;
+  int? maleMrp;
   bool? showDiscountedPrice;
 
   CurrentFeeBatch({
@@ -103,6 +106,9 @@ class CurrentFeeBatch {
     this.femaleFee,
     this.kidFee,
     this.showDiscountedPrice,
+    this.kidMrp,
+    this.femaleMrp,
+    this.maleMrp,
   });
 
   CurrentFeeBatch.fromJson(Map<String, dynamic> json) {
@@ -112,6 +118,9 @@ class CurrentFeeBatch {
     femaleFee = json['femaleFee'];
     kidFee = json['kidFee'];
     showDiscountedPrice = json['showDiscountedPrice'];
+    femaleMrp = json['femaleMrp'];
+    maleMrp = json['maleMrp'];
+    kidMrp = json['kidMrp'];
   }
 
   Map<String, dynamic> toJson() {
@@ -122,6 +131,9 @@ class CurrentFeeBatch {
     data['femaleFee'] = femaleFee;
     data['kidFee'] = kidFee;
     data['showDiscountedPrice'] = showDiscountedPrice;
+    data['femaleMrp'] = femaleMrp;
+    data['maleMrp'] = maleMrp;
+    data['kidMrp'] = kidMrp;
     return data;
   }
 }
