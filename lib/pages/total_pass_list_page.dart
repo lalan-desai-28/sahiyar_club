@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sahiyar_club/controllers/total_pass_list_controller.dart';
+import 'package:sahiyar_club/models/fee_batch.dart';
 import 'package:sahiyar_club/models/user.dart';
 import 'package:sahiyar_club/statics/app_statics.dart';
 import 'package:sahiyar_club/widgets/custom_dropdown.dart';
@@ -54,15 +55,7 @@ class _TotalPassListPageState extends State<TotalPassListPage> {
               ],
             ),
           ),
-          Obx(
-            () => Text(
-              _controller.filterSummary,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                fontWeight: FontWeight.normal,
-              ),
-            ),
-          ),
+          Obx(() => _buildFilterChips(context)),
         ],
       ),
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -86,9 +79,7 @@ class _TotalPassListPageState extends State<TotalPassListPage> {
         ),
         Obx(
           () =>
-              _controller.selectedStatus.value != null ||
-                      _controller.selectedGender.value != null ||
-                      _controller.isAmountPaid.value != null
+              _controller.hasActiveFilters
                   ? IconButton(
                     icon: Icon(
                       Icons.clear,
@@ -99,6 +90,44 @@ class _TotalPassListPageState extends State<TotalPassListPage> {
                   : const SizedBox.shrink(),
         ),
       ],
+    );
+  }
+
+  Widget _buildFilterChips(BuildContext context) {
+    final activeFilters = _controller.getActiveFilters();
+
+    if (activeFilters.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Text(
+          'All Passes',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            fontWeight: FontWeight.normal,
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      height: 32,
+      margin: const EdgeInsets.only(top: 8),
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: activeFilters.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final filter = activeFilters[index];
+          return Text(
+            filter,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Colors.amber[700],
+              fontWeight: FontWeight.w500,
+              fontSize: 11,
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -263,25 +292,28 @@ class _FilterBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.7,
+      ),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      child: Padding(
+      child: SingleChildScrollView(
         padding: EdgeInsets.only(
-          left: 24,
-          right: 24,
-          top: 24,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          left: 20,
+          right: 20,
+          top: 16,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(context),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             _buildFilters(context),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
             _buildActionButtons(context),
           ],
         ),
@@ -290,7 +322,7 @@ class _FilterBottomSheet extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Row(
+    return Column(
       children: [
         Container(
           width: 40,
@@ -300,7 +332,7 @@ class _FilterBottomSheet extends StatelessWidget {
             borderRadius: BorderRadius.circular(2),
           ),
         ),
-        const Spacer(),
+        const SizedBox(height: 12),
         Text(
           'Filter Passes',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -308,8 +340,6 @@ class _FilterBottomSheet extends StatelessWidget {
             color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
-        const Spacer(),
-        const SizedBox(width: 40),
       ],
     );
   }
@@ -325,108 +355,230 @@ class _FilterBottomSheet extends StatelessWidget {
     return Column(
       children: [
         // Fee Dropdown
-        Obx(
-          () => CustomDropdown(
-            label: 'Fee Batch',
-            items: controller.feeBatches,
-            selectedValue: controller.selectedFeeBatch.value,
-            onChanged: (value) {
-              controller.selectedFeeBatch.value = value!;
-              controller.applyFilters();
-            },
-            itemToString: (item) => item.batchName ?? "Fee Batch",
+        _buildCompactDropdown(
+          context: context,
+          label: 'Fee Batch',
+          child: Obx(
+            () => DropdownButtonFormField<FeeBatch>(
+              value: controller.selectedFeeBatch.value,
+              decoration: _getInputDecoration(context, 'Fee Batch'),
+              items:
+                  controller.feeBatches.map((batch) {
+                    return DropdownMenuItem<FeeBatch>(
+                      value: batch,
+                      child: Text(batch.batchName ?? "Fee Batch"),
+                    );
+                  }).toList(),
+              onChanged: (value) {
+                controller.selectedFeeBatch.value = value;
+                controller.applyFilters();
+              },
+            ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
+
         // Status Dropdown
-        Obx(
-          () => CustomDropdown(
-            label: 'Status',
-            items: controller.statusOptions,
-            selectedValue: controller.selectedStatus.value,
-            onChanged: (value) {
-              controller.selectedStatus.value = value!;
-              controller.applyFilters();
-            },
-            itemToString: (item) => item,
+        _buildCompactDropdown(
+          context: context,
+          label: 'Status',
+          child: Obx(
+            () => DropdownButtonFormField<String>(
+              value: controller.selectedStatus.value,
+              decoration: _getInputDecoration(context, 'Status'),
+              items:
+                  controller.statusOptions.map((status) {
+                    return DropdownMenuItem<String>(
+                      value: status,
+                      child: Text(status),
+                    );
+                  }).toList(),
+              onChanged: (value) {
+                controller.selectedStatus.value = value;
+                controller.applyFilters();
+              },
+            ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
 
         // Gender Dropdown
-        Obx(
-          () => CustomDropdown(
-            label: 'Gender',
-            items: genderOptions,
-            selectedValue: controller.selectedGender.value,
-            onChanged: (value) {
-              controller.selectedGender.value = value!;
-              controller.applyFilters();
-            },
-            itemToString: (item) => item,
+        _buildCompactDropdown(
+          context: context,
+          label: 'Gender',
+          child: Obx(
+            () => DropdownButtonFormField<String>(
+              value: controller.selectedGender.value,
+              decoration: _getInputDecoration(context, 'Gender'),
+              items:
+                  genderOptions.map((gender) {
+                    return DropdownMenuItem<String>(
+                      value: gender,
+                      child: Text(gender),
+                    );
+                  }).toList(),
+              onChanged: (value) {
+                controller.selectedGender.value = value;
+                controller.applyFilters();
+              },
+            ),
           ),
         ),
 
         if (AppStatics.currentUser!.role == "agent" &&
             controller.subAgents.isNotEmpty) ...[
-          const SizedBox(height: 16),
-          Obx(
-            () => CustomDropdown<User>(
-              label: 'Sub agent',
-              items: controller.subAgents,
-              selectedValue: controller.selectedSubAgent.value,
-              onChanged: (value) {
-                controller.selectedSubAgent.value = value;
-                controller.applyFilters();
-              },
-              itemToString: (item) => item.toString(),
+          const SizedBox(height: 12),
+          _buildCompactDropdown(
+            context: context,
+            label: 'Sub Agent',
+            child: Obx(
+              () => DropdownButtonFormField<User>(
+                value: controller.selectedSubAgent.value,
+                decoration: _getInputDecoration(context, 'Sub Agent'),
+                items:
+                    controller.subAgents.map((agent) {
+                      return DropdownMenuItem<User>(
+                        value: agent,
+                        child: Text(agent.toString()),
+                      );
+                    }).toList(),
+                onChanged: (value) {
+                  controller.selectedSubAgent.value = value;
+                  // Set includeSubAgents to null when specific sub agent is selected
+                  if (value != null) {
+                    controller.includeSubAgents.value = null;
+                  }
+                  controller.applyFilters();
+                },
+              ),
             ),
           ),
         ],
 
-        // Payment Status Checkbox
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
+
+        // Include Sub Agents Checkbox
         Obx(
-          () => Container(
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-              ),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: CheckboxListTile(
-              title: Text(
-                'Amount Paid',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              subtitle: Text(
-                'Show only passes where amount is paid',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withOpacity(0.6),
-                ),
-              ),
-              value: controller.isAmountPaid.value,
-              tristate: true,
-              onChanged: (value) {
-                controller.isAmountPaid.value = value;
-                controller.applyFilters();
-              },
-              activeColor: Colors.amber[600],
-              checkColor: Colors.white,
-              controlAffinity: ListTileControlAffinity.leading,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 4,
-              ),
-            ),
+          () => _buildCheckboxTile(
+            context: context,
+            title: 'Include Sub Agents',
+            subtitle: 'Show passes from all sub agents',
+            value: controller.includeSubAgents.value,
+            onChanged: (value) {
+              controller.includeSubAgents.value = value;
+              // Clear specific sub agent when including all
+              if (value == true) {
+                controller.selectedSubAgent.value = null;
+              }
+              controller.applyFilters();
+            },
+          ),
+        ),
+
+        const SizedBox(height: 8),
+
+        // Payment Status Checkbox
+        Obx(
+          () => _buildCheckboxTile(
+            context: context,
+            title: 'Amount Paid',
+            subtitle: 'Show only passes where amount is paid',
+            value: controller.isAmountPaid.value,
+            onChanged: (value) {
+              controller.isAmountPaid.value = value;
+              controller.applyFilters();
+            },
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildCompactDropdown({
+    required BuildContext context,
+    required String label,
+    required Widget child,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 4),
+        child,
+      ],
+    );
+  }
+
+  InputDecoration _getInputDecoration(BuildContext context, String hint) {
+    return InputDecoration(
+      hintText: hint,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+        ),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.amber[600]!),
+      ),
+      filled: true,
+      fillColor: Theme.of(context).colorScheme.surface,
+    );
+  }
+
+  Widget _buildCheckboxTile({
+    required BuildContext context,
+    required String title,
+    required String subtitle,
+    required bool? value,
+    required Function(bool?) onChanged,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+        ),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: CheckboxListTile(
+        title: Text(
+          title,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+            fontSize: 12,
+          ),
+        ),
+        value: value,
+        tristate: true,
+        onChanged: onChanged,
+        activeColor: Colors.amber[600],
+        checkColor: Colors.white,
+        controlAffinity: ListTileControlAffinity.leading,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        dense: true,
+      ),
     );
   }
 
@@ -441,7 +593,7 @@ class _FilterBottomSheet extends StatelessWidget {
             },
             style: OutlinedButton.styleFrom(
               side: BorderSide(color: Colors.amber[600]!),
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: 12),
               foregroundColor: Colors.amber[600],
             ),
             child: Text(
@@ -463,7 +615,7 @@ class _FilterBottomSheet extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.amber[600],
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: 12),
             ),
             child: const Text(
               'Apply Filters',

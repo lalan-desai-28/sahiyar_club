@@ -9,6 +9,7 @@ import 'package:sahiyar_club/repositories/pass_repository.dart';
 import 'package:sahiyar_club/repositories/users_repository.dart';
 import 'package:sahiyar_club/statics/app_statics.dart';
 import 'package:sahiyar_club/utils/snackbar_util.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TotalPassListController extends GetxController {
   final PassRepository _passRepository = PassRepository();
@@ -27,6 +28,7 @@ class TotalPassListController extends GetxController {
   final selectedStatus = Rxn<String>();
   final selectedGender = Rxn<String>();
   final isAmountPaid = Rxn<bool>();
+  final includeSubAgents = Rxn<bool>();
 
   final selectedFeeBatch = Rxn<FeeBatch>();
 
@@ -37,20 +39,6 @@ class TotalPassListController extends GetxController {
 
   // Filter options
   final statusOptions = ['Pending', 'Approved', 'Issued', 'RejectedForQuery'];
-
-  void getSubAgents() async {
-    isLoading.value = true;
-    final subagents = await _usersRepository.getSubAgents();
-    subAgents.assignAll(subagents.data ?? []);
-    isLoading.value = false;
-  }
-
-  void getFeeBatches() async {
-    isLoading.value = true;
-    final feeBatches = await _miscRepository.getAllFeeBatches();
-    this.feeBatches.assignAll(feeBatches);
-    isLoading.value = false;
-  }
 
   @override
   void onInit() {
@@ -64,7 +52,9 @@ class TotalPassListController extends GetxController {
       selectedGender.value = args['gender'];
     }
 
+    _loadInclusiveSubAgentsPreference();
     fetchPasses();
+
     if (AppStatics.currentUser?.role == "agent") {
       getSubAgents();
     }
@@ -75,6 +65,25 @@ class TotalPassListController extends GetxController {
   void onClose() {
     scrollController.dispose();
     super.onClose();
+  }
+
+  Future<void> _loadInclusiveSubAgentsPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    includeSubAgents.value = prefs.getBool('inclusiveSubAgents') ?? true;
+  }
+
+  void getSubAgents() async {
+    isLoading.value = true;
+    final subagents = await _usersRepository.getSubAgents();
+    subAgents.assignAll(subagents.data ?? []);
+    isLoading.value = false;
+  }
+
+  void getFeeBatches() async {
+    isLoading.value = true;
+    final feeBatches = await _miscRepository.getAllFeeBatches();
+    this.feeBatches.assignAll(feeBatches);
+    isLoading.value = false;
   }
 
   void _onScroll() {
@@ -107,9 +116,9 @@ class TotalPassListController extends GetxController {
         subAgentId: selectedSubAgent.value?.id,
         isAmountPaid: isAmountPaid.value,
         feeBatchId: selectedFeeBatch.value?.sId,
+        includeSubAgents: includeSubAgents.value,
       );
 
-      // print(response.data.)
       totalPassCount.value = response.data?.totalCount ?? 0;
 
       if (response.statusCode == 200) {
@@ -140,6 +149,7 @@ class TotalPassListController extends GetxController {
         subAgentId: selectedSubAgent.value?.id,
         isAmountPaid: isAmountPaid.value,
         feeBatchId: selectedFeeBatch.value?.sId,
+        includeSubAgents: includeSubAgents.value,
       );
 
       if (response.statusCode == 200) {
@@ -173,6 +183,8 @@ class TotalPassListController extends GetxController {
     selectedGender.value = null;
     selectedSubAgent.value = null;
     isAmountPaid.value = null;
+    selectedFeeBatch.value = null;
+    _loadInclusiveSubAgentsPreference(); // Reset to default preference
     fetchPasses();
   }
 
@@ -180,20 +192,44 @@ class TotalPassListController extends GetxController {
     SnackbarUtil.showErrorSnackbar(title: 'Error', message: message);
   }
 
-  String get filterSummary {
+  bool get hasActiveFilters {
+    return selectedStatus.value != null ||
+        selectedGender.value != null ||
+        selectedSubAgent.value != null ||
+        isAmountPaid.value != null ||
+        selectedFeeBatch.value != null ||
+        (includeSubAgents.value != null && includeSubAgents.value != true);
+  }
+
+  List<String> getActiveFilters() {
     List<String> activeFilters = [];
+
     if (selectedStatus.value != null) {
-      activeFilters.add('Status: ${selectedStatus.value}');
+      activeFilters.add('${selectedStatus.value}');
     }
     if (selectedGender.value != null) {
-      activeFilters.add('Gender: ${selectedGender.value}');
+      activeFilters.add('${selectedGender.value}');
     }
     if (selectedSubAgent.value != null) {
-      activeFilters.add('Sub Agent: ${selectedSubAgent.value?.nickName}');
+      activeFilters.add('${selectedSubAgent.value?.fullName}');
+    }
+    if (selectedFeeBatch.value != null) {
+      activeFilters.add('${selectedFeeBatch.value?.batchName}');
     }
     if (isAmountPaid.value != null) {
-      activeFilters.add('Payment: ${isAmountPaid.value! ? 'Paid' : 'Unpaid'}');
+      activeFilters.add(isAmountPaid.value! ? 'Paid' : 'Unpaid');
     }
+    if (includeSubAgents.value == false) {
+      activeFilters.add('Only Yours');
+    } else if (includeSubAgents.value == true) {
+      activeFilters.add('All');
+    }
+
+    return activeFilters;
+  }
+
+  String get filterSummary {
+    final activeFilters = getActiveFilters();
     return activeFilters.isEmpty ? 'All Passes' : activeFilters.join(' • ');
   }
 }
