@@ -59,6 +59,10 @@ class TotalPassListController extends GetxController {
       getSubAgents();
     }
     getFeeBatches();
+
+    SharedPreferences.getInstance().then((prefs) {
+      includeSubAgents.value = prefs.getBool('inclusiveSubAgents') ?? true;
+    });
   }
 
   @override

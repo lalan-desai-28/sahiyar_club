@@ -30,6 +30,7 @@ class _TotalPassListPageState extends State<TotalPassListPage> {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
+      
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -97,14 +98,11 @@ class _TotalPassListPageState extends State<TotalPassListPage> {
     final activeFilters = _controller.getActiveFilters();
 
     if (activeFilters.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.only(top: 4),
-        child: Text(
-          'All Passes',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-            fontWeight: FontWeight.normal,
-          ),
+      return Text(
+        'All Passes',
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+          fontWeight: FontWeight.normal,
         ),
       );
     }
