@@ -28,7 +28,7 @@ class TotalPassListController extends GetxController {
   final selectedStatus = Rxn<String>();
   final selectedGender = Rxn<String>();
   final isAmountPaid = Rxn<bool>();
-  final includeSubAgents = Rxn<bool>();
+  final includeSubAgents = RxBool(true);
 
   final selectedFeeBatch = Rxn<FeeBatch>();
 
@@ -52,28 +52,18 @@ class TotalPassListController extends GetxController {
       selectedGender.value = args['gender'];
     }
 
-    _loadInclusiveSubAgentsPreference();
     fetchPasses();
 
     if (AppStatics.currentUser?.role == "agent") {
       getSubAgents();
     }
     getFeeBatches();
-
-    SharedPreferences.getInstance().then((prefs) {
-      includeSubAgents.value = prefs.getBool('inclusiveSubAgents') ?? true;
-    });
   }
 
   @override
   void onClose() {
     scrollController.dispose();
     super.onClose();
-  }
-
-  Future<void> _loadInclusiveSubAgentsPreference() async {
-    final prefs = await SharedPreferences.getInstance();
-    includeSubAgents.value = prefs.getBool('inclusiveSubAgents') ?? true;
   }
 
   void getSubAgents() async {
@@ -188,7 +178,7 @@ class TotalPassListController extends GetxController {
     selectedSubAgent.value = null;
     isAmountPaid.value = null;
     selectedFeeBatch.value = null;
-    _loadInclusiveSubAgentsPreference(); // Reset to default preference
+    includeSubAgents.value = true;
     fetchPasses();
   }
 
@@ -202,7 +192,7 @@ class TotalPassListController extends GetxController {
         selectedSubAgent.value != null ||
         isAmountPaid.value != null ||
         selectedFeeBatch.value != null ||
-        (includeSubAgents.value != null && includeSubAgents.value != true);
+        (includeSubAgents.value != true);
   }
 
   List<String> getActiveFilters() {
@@ -223,7 +213,7 @@ class TotalPassListController extends GetxController {
     if (isAmountPaid.value != null) {
       activeFilters.add(isAmountPaid.value! ? 'Paid' : 'Unpaid');
     }
-    if (includeSubAgents.value == false) {
+    if (includeSubAgents.value == false && selectedSubAgent.value == null) {
       activeFilters.add('Only Yours');
     } else if (includeSubAgents.value == true) {
       activeFilters.add('All');

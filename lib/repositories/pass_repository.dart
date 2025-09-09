@@ -223,7 +223,8 @@ class PassRepository {
         if (subAgentId != null) 'subAgentId': subAgentId,
         if (isAmountPaid != null) 'isAmountPaid': isAmountPaid,
         if (feeBatchId != null) 'feeBatchId': feeBatchId,
-        if (includeSubAgents != null) 'includeSubAgents': includeSubAgents,
+        if (includeSubAgents != null && includeSubAgents)
+          'includeSubAgents': includeSubAgents,
       },
     );
 

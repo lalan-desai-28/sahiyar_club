@@ -30,7 +30,6 @@ class _TotalPassListPageState extends State<TotalPassListPage> {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
-      
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -442,9 +441,9 @@ class _FilterBottomSheet extends StatelessWidget {
                     }).toList(),
                 onChanged: (value) {
                   controller.selectedSubAgent.value = value;
-                  // Set includeSubAgents to null when specific sub agent is selected
+                  // Set includeSubAgents to false when specific sub agent is selected
                   if (value != null) {
-                    controller.includeSubAgents.value = null;
+                    controller.includeSubAgents.value = false;
                   }
                   controller.applyFilters();
                 },
@@ -463,7 +462,7 @@ class _FilterBottomSheet extends StatelessWidget {
             subtitle: 'Show passes from all sub agents',
             value: controller.includeSubAgents.value,
             onChanged: (value) {
-              controller.includeSubAgents.value = value;
+              controller.includeSubAgents.value = value ?? false;
               // Clear specific sub agent when including all
               if (value == true) {
                 controller.selectedSubAgent.value = null;

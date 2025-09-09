@@ -16,7 +16,8 @@ class HomeRepository {
       '/passes/myStats',
       queryParameters: {
         if (subAgentId != null) 'subAgentId': subAgentId,
-        if (inclusiveSubAgents != null) 'inclusiveSubAgents': inclusiveSubAgents,
+        if (inclusiveSubAgents != null && inclusiveSubAgents)
+          'includeSubAgents': inclusiveSubAgents,
       },
     );
 
